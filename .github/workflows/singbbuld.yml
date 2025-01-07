@@ -23,7 +23,6 @@ jobs:
 
       - name: Copy file from Docker container
         run: |
-          docker cp singb:/builder/bin/packages/x86_64/utilites/. ./bin/
           docker cp singb:/builder/bin/packages/x86_64/luci/. ./bin/
 
       - name: Filter IPK files
