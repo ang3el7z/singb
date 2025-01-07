@@ -1,29 +1,25 @@
-#!/bin/bash
+#!/bin/sh
 
-# Установка зависимостей
+# Обновление репозиториев и установка зависимостей
+echo "Устанавливаю зависимости..."
 opkg update && opkg install openssh-sftp-server nano curl sing-box
 
-# Включаем sing-box
+# Конфигурация sing-box
+echo "Настройка sing-box..."
 uci set sing-box.main.enabled="1"
 uci set sing-box.main.user="root"
 uci commit sing-box
 
-# Останавливаем сервис sing-box
+# Отключение сервиса sing-box
+echo "Отключаю сервис sing-box..."
 service sing-box disable
 
-# Запрашиваем конфигурацию от пользователя
-echo "Введите конфигурацию в формате JSON:"
-
-# Чтение ввода от пользователя
-read -r user_config
-
-# Очистка файла конфигурации
-echo "{}" > /etc/sing-box/config.json
-
-# Запись введенной конфигурации в файл
-echo "$user_config" > /etc/sing-box/config.json
+# Очистка конфигурационного файла sing-box
+echo "Очищаю конфигурационный файл /etc/sing-box/config.json..."
+echo '{}' > /etc/sing-box/config.json
 
 # Создание нового интерфейса "proxy"
+echo "Создаю новый интерфейс proxy..."
 uci set network.proxy=interface
 uci set network.proxy.proto="none"
 uci set network.proxy.device="singtun0"
@@ -35,6 +31,7 @@ uci commit network
 service network restart
 
 # Настройка правил файрвола
+echo "Настройка правил файрвола..."
 uci add firewall zone
 uci set firewall.@zone[-1].name="proxy"
 uci set firewall.@zone[-1].forward="REJECT"
@@ -52,8 +49,11 @@ uci set firewall.@forwarding[-1].family="ipv4"
 uci commit firewall
 service firewall reload
 
-# Запуск сервиса sing-box
-service sing-box enable
-service sing-box restart
+# Комментарий по выполнению следующих шагов
+echo "Конфигурация завершена. После записи /etc/sing-box/config.json выполните следующие команды:"
+echo "service sing-box enable"
+echo "service sing-box restart"
 
-echo "Конфигурация успешно применена!"
+# Открытие конфигурационного файла для редактирования
+echo "Открываю конфигурационный файл для редактирования..."
+nano /etc/sing-box/config.json
