@@ -32,8 +32,8 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
 
           mkdir -p ./filtered-bin
-          cp ./bin/luci-i18n-singb-ru_*.ipk "./filtered-bin/luci-i18n-singb-ru_${VERSION}.ipk"
-          cp ./bin/singb*.ipk ./filtered-bin/
+          # cp ./bin/luci-i18n-singb-ru_*.ipk "./filtered-bin/luci-i18n-singb-ru_${VERSION}.ipk"
+          # cp ./bin/singb*.ipk ./filtered-bin/
           cp ./bin/luci-app-singb*.ipk ./filtered-bin/
 
       - name: Remove Docker container
