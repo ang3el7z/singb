@@ -5,7 +5,7 @@ PKG_VERSION:=0.0.1
 PKG_RELEASE:=1
 
 LUCI_TITLE:=LuCI singb app
-LUCI_DEPENDS:=+luci-base +singb
+LUCI_DEPENDS:=+luci-base +sing-box
 LUCI_PKGARCH:=all
 LUCI_LANG.ru:=Русский (Russian)
 LUCI_LANG.en:=English
