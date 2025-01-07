@@ -49,16 +49,32 @@ uci set firewall.@forwarding[-1].family="ipv4"
 uci commit firewall
 service firewall reload
 
-# Установка singb-ui
-echo "Установка singb"
-wget -O /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/latest/download/luci-app-singb_0.0.1_all.ipk && 
-chmod 0755 /root/luci-app-singb.ipk && opkg update && opkg install /root/luci-app-singb.ipk && /etc/init.d/uhttpd restart
-
 # Открытие конфигурационного файла для редактирования
 echo "Открываю конфигурационный файл для редактирования..."
 nano /etc/sing-box/config.json
 
-# Комментарий по выполнению следующих шагов
-echo "Конфигурация завершена. После записи /etc/sing-box/config.json перезапускаем службу"
-service sing-box enable
-service sing-box restart
+# Запрос на подтверждение, что файл настроен правильно
+while true; do
+    read -p "Вы настроили файл /etc/sing-box/config.json ? (y/n, по умолчанию y): " yn
+    yn=${yn:-y}  # Если пользователь не ввел ничего, по умолчанию будет 'y'
+    
+    case $yn in
+        [Yy]* ) 
+            echo "После записи /etc/sing-box/config.json перезапускаем службу"
+            service sing-box enable
+            service sing-box restart
+            break
+            ;;
+        [Nn]* ) 
+            echo "Перезапускаю редактор nano для редактирования конфигурации..."
+            nano /etc/sing-box/config.json
+            ;;
+        * ) 
+            echo "Вы настроили файл /etc/sing-box/config.json. Пожалуйста, введите y (да) или n (нет)."
+            ;;
+    esac
+done
+
+# Установка singb-ui
+echo "Установка singb"
+wget -O /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/latest/download/luci-app-singb_0.0.1_all.ipk && chmod 0755 /root/luci-app-singb.ipk && opkg update && opkg install /root/luci-app-singb.ipk && /etc/init.d/uhttpd restart
