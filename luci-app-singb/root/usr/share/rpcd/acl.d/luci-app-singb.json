@@ -1,0 +1,25 @@
+{
+  "luci-app-singb": {
+    "description": "Grant UCI and RPC access to LuCI app singb",
+    "read": {
+      "file": {
+        "/etc/init.d/singb": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "service": [
+          "list"
+        ]
+      },
+      "uci": [
+        "singb"
+      ]
+    },
+    "write": {
+      "uci": [
+        "singb"
+      ]
+    }
+  }
+}
