@@ -1,17 +1,17 @@
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=luci-app-signb
+PKG_NAME:=luci-app-singb
 PKG_VERSION:=0.0.1
 PKG_RELEASE:=1
 
-LUCI_TITLE:=LuCI signb app
-LUCI_DEPENDS:=+luci-base +signb
+LUCI_TITLE:=LuCI singb app
+LUCI_DEPENDS:=+luci-base +singb
 LUCI_PKGARCH:=all
 LUCI_LANG.ru:=Русский (Russian)
 LUCI_LANG.en:=English
 
 PKG_LICENSE:=GPL-2.0-or-later
-PKG_MAINTAINER:=ITDog <signb@signb.signb>
+PKG_MAINTAINER:=ITDog <singb@singb.singb>
 
 LUCI_LANGUAGES:=en ru
 
