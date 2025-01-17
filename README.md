@@ -10,4 +10,4 @@ wget -O  /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/la
 
 
 # Установка singbox + singb (НЕ УСТАНАВЛИВАТЬ!)
-wget -O /root/installDev.sh https://raw.githubusercontent.com/Vancltkin/singb/main/installDev.sh && chmod 0755 /root/install.sh && sh /root/install.sh
+wget -O /root/installDev.sh https://raw.githubusercontent.com/Vancltkin/singb/main/installDev.sh && chmod 0755 /root/installDev.sh && sh /root/installDev.sh
