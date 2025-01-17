@@ -3,23 +3,16 @@
     "description": "Grant UCI and RPC access to LuCI app singb",
     "read": {
       "file": {
-        "/etc/init.d/singb": [
-          "exec"
-        ]
+        "/etc/init.d/sing-box": [ "exec" ],
+        "/etc/sing-box/config.json": [ "read" ]
       },
-      "ubus": {
-        "service": [
-          "list"
-        ]
-      },
-      "uci": [
-        "singb"
-      ]
+      "uci": [ "singb" ]
     },
     "write": {
-      "uci": [
-        "singb"
-      ]
+      "file": {
+        "/etc/sing-box/config.json": [ "write" ]
+      },
+      "uci": [ "singb" ]
     }
   }
 }
