@@ -23,7 +23,6 @@ jobs:
 
       - name: Copy file from Docker container
         run: |
-          # docker cp singb:/builder/bin/packages/x86_64/utilites/. ./bin/
           docker cp singb:/builder/bin/packages/x86_64/luci/. ./bin/
 
       - name: Filter IPK files
@@ -32,9 +31,7 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
 
           mkdir -p ./filtered-bin
-          # cp ./bin/luci-i18n-singb-ru_*.ipk "./filtered-bin/luci-i18n-singb-ru_${VERSION}.ipk"
-          # cp ./bin/singb*.ipk ./filtered-bin/
-          cp ./bin/luci-app-singb*.ipk ./filtered-bin/
+          cp ./bin/luci-app-singb*.ipk ./filtered-bin/luci-app-singb.ipk
 
       - name: Remove Docker container
         run: docker rm singb
