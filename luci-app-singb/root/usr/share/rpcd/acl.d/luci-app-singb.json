@@ -6,7 +6,7 @@
         "/etc/init.d/sing-box": [ "exec" ],
         "/etc/sing-box/config.json": [ "read" ]
         "/etc/sing-box/config2.json": [ "read" ]
-	      "/etc/sing-box/config3.json": [ "read" ]
+	"/etc/sing-box/config3.json": [ "read" ]
       },
       "uci": [ "singb" ]
     },
@@ -14,7 +14,7 @@
       "file": {
         "/etc/sing-box/config.json": [ "write" ]
         "/etc/sing-box/config2.json": [ "write" ]
-	      "/etc/sing-box/config3.json": [ "write" ]
+	"/etc/sing-box/config3.json": [ "write" ]
       },
       "uci": [ "singb" ]
     }
