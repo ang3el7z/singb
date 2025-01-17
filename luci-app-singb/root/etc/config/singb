@@ -1,4 +1,4 @@
-config singb 'main'
-	option enabled '1'
-	option user 'root'
-	option conffile '/etc/sing-box/config.json'
+config main 'main'
+	option enabled '0'
+	option servicepath '/etc/init.d/sing-box'
+	option configpath '/etc/sing-box/config.json'
