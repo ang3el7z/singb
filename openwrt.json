@@ -1,0 +1,196 @@
+{
+    "log": {
+        "disabled": false,
+        "level": "warn",
+        "output": "/tmp/sing-box.log",
+        "timestamp": true
+    },
+    "inbounds": [
+        {
+            "type": "mixed",
+            "tag": "mixed-in",
+            "listen": "127.0.0.1",
+            "listen_port": 1080,
+            "tcp_fast_open": false,
+            "sniff": true,
+            "sniff_override_destination": true,
+            "set_system_proxy": false
+        },
+        {
+            "type": "tun",
+            "tag": "tun-in",
+            "interface_name": "singtun0",
+            "inet4_address": "172.19.0.1/30",
+            "stack": "gvisor",
+            "mtu": 1400,
+            "auto_route": true,
+            "strict_route": false,
+            "endpoint_independent_nat": false,
+            "sniff": true,
+            "sniff_override_destination": true
+        }
+    ],
+    "dns": {
+        "servers": [
+            {
+                "tag": "dns_direct",
+                "address": "~dns~",
+                "address_resolver": "dns-remote",
+                "strategy": "prefer_ipv4",
+                "detour": "direct"
+            },
+            {
+                "tag": "dns-remote",
+                "address": "tcp://8.8.8.8",
+                "address_strategy": "prefer_ipv4",
+                "strategy": "prefer_ipv4",
+                "detour": "direct"
+            }
+        ],
+        "rules": [
+            {
+                "outbound": "any",
+                "server": "dns-direct",
+                "disable_cache": false
+            }
+        ],
+        "strategy": "ipv4_only",
+        "independent_cache": true
+    },
+    "experimental": {
+        "cache_file": {
+            "enabled": true
+        }
+    },
+    "outbounds": [
+        {
+            "flow": "xtls-rprx-vision",
+            "packet_encoding": "",
+            "server": "~domain~",
+            "server_port": 443,
+            "tls": {
+                "enabled": true,
+                "insecure": false,
+                "reality": {
+                    "enabled": true,
+                    "public_key": "~public_key~",
+                    "short_id": "~short_id~"
+                },
+                "server_name": "~server_name~",
+                "utls": {
+                    "enabled": true,
+                    "fingerprint": "chrome"
+                }
+            },
+            "uuid": "~uid~",
+            "type": "vless",
+            "domain_strategy": "ipv4_only",
+            "tag": "~outbound~"
+        },
+        {
+            "type": "direct",
+            "tag": "direct"
+        },
+        {
+            "type": "block",
+            "tag": "block"
+        },
+        {
+            "type": "dns",
+            "tag": "dns-out"
+        }
+    ],
+    "route": {
+        "auto_detect_interface": true,
+        "rules": [
+            {
+                "protocol": "dns",
+                "outbound": "dns-out"
+            },
+            {
+                "protocol": "quic",
+                "outbound": "block"
+            },
+            {
+                "addruleset": true,
+                "outbound": "direct"
+            },
+            {
+                "addruleset": true,
+                "createruleset": [
+                    {
+                        "name": "pac",
+                        "interval": "30s",
+                        "rules": [
+                            {
+                                "domain_suffix": "~pac~"
+                            }
+                        ]
+                    }
+                ],
+                "outbound": "~outbound~"
+            },
+            {
+                "addruleset": true,
+                "createruleset": [
+                    {
+                        "name": "package",
+                        "interval": "30s",
+                        "rules": [
+                            {
+                                "package_name": "~package~"
+                            }
+                        ]
+                    }
+                ],
+                "outbound": "~outbound~"
+            },
+            {
+                "addruleset": true,
+                "createruleset": [
+                    {
+                        "name": "process",
+                        "interval": "30s",
+                        "rules": [
+                            {
+                                "process_name": "~process~"
+                            }
+                        ]
+                    }
+                ],
+                "outbound": "~outbound~"
+            },
+            {
+                "addruleset": true,
+                "createruleset": [
+                    {
+                        "name": "block",
+                        "interval": "30s",
+                        "rules": [
+                            {
+                                "domain_suffix": "~block~"
+                            }
+                        ]
+                    }
+                ],
+                "outbound": "block"
+            },
+            {
+                "addruleset": true,
+                "createruleset": [
+                    {
+                        "name": "warp",
+                        "interval": "30s",
+                        "rules": [
+                            {
+                                "domain_suffix": "~warp~"
+                            }
+                        ]
+                    }
+                ],
+                "outbound": "~outbound~"
+            }
+        ],
+        "final": "direct"
+    }
+}
