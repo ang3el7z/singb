@@ -12,7 +12,7 @@ return view.extend({
         m = new form.Map('singb', _('SingBox Plugin'), _('Plugin for managing SingBox service.'));
 
         // Секция
-        s = m.section(form.TypedSection, 'main', _('Settings'));
+        s = m.section(form.TypedSection, 'singb', _('Settings'));
         s.anonymous = true;
 
         // Вкладка 1: Control Panel
