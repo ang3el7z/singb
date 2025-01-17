@@ -1,1 +1,4 @@
-
+config singb 'main'
+	option enabled '1'
+	option user 'root'
+	option conffile '/etc/sing-box/config.json'
