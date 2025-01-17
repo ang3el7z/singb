@@ -78,3 +78,13 @@ done
 # Установка singb-ui
 echo "Установка singb"
 wget -O /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/latest/download/luci-app-singb.ipk && chmod 0755 /root/luci-app-singb.ipk && opkg update && opkg install /root/luci-app-singb.ipk && /etc/init.d/uhttpd restart
+
+echo "Обновляем UI"
+rm -f /var/luci-indexcache*
+rm -f /tmp/luci-indexcache*
+
+# Перезагружаем rpcd, если он доступен
+[ -x /etc/init.d/rpcd ] && /etc/init.d/rpcd reload
+
+# Перезагружаем uhttpd, если он доступен
+[ -x /etc/init.d/uhttpd ] && /etc/init.d/uhttpd restart
