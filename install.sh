@@ -79,6 +79,18 @@ done
 echo "Установка singb"
 wget -O /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/latest/download/luci-app-singb.ipk && chmod 0755 /root/luci-app-singb.ipk && opkg update && opkg install /root/luci-app-singb.ipk && /etc/init.d/uhttpd restart
 
+# Проверяем, существует ли файл config2.json, если нет - создаем пустой файл
+if [ ! -f /etc/sing-box/config2.json ]; then
+    echo "{}" > /etc/sing-box/config2.json
+    echo "Created /etc/sing-box/config2.json"
+fi
+
+# Проверяем, существует ли файл config3.json, если нет - создаем пустой файл
+if [ ! -f /etc/sing-box/config3.json ]; then
+    echo "{}" > /etc/sing-box/config3.json
+    echo "Created /etc/sing-box/config3.json"
+fi
+
 echo "Обновляем UI"
 rm -f /var/luci-indexcache*
 rm -f /tmp/luci-indexcache*
