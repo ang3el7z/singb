@@ -8,94 +8,124 @@ return view.extend({
     async render() {
         var m, s, o;
 
-        m = new form.Map('singb', 'Singb configuration', null, ['main']);
+        // Создаем форму
+        m = new form.Map('singb', 'Singb Configuration');
+
+        // Добавляем секцию
         s = m.section(form.TypedSection, 'main', 'Control Panel');
         s.anonymous = true;
 
-        // Поле для отображения статуса сервиса
-        o = s.option(form.DummyValue, 'service_status', 'Service Status');
-        o.rawhtml = true; // Позволяет использовать HTML для стилизации
+        // Вкладки
+        s.tab('service', _('Service Management'));
+        s.tab('config', _('Edit Config'));
 
-        // Функция для рендера статуса с цветом
-        function renderStatus(status) {
-            if (status.toLowerCase() === 'running') {
-                return '<span style="color: green; font-weight: bold;">Running</span>';
-            } else if (status.toLowerCase() === 'inactive') {
-                return '<span style="color: red; font-weight: bold;">Inactive</span>';
-            } else {
-                return `<span style="color: orange;">${status}</span>`; // Для других статусов
-            }
-        }
-
-        // Получаем статус сервиса и отображаем его
+        // Вкладка "Service Management"
+        o = s.taboption('service', form.DummyValue, 'service_status', _('Service Status'));
+        o.rawhtml = true;
         o.cfgvalue = async function () {
             try {
                 const result = await fs.exec('/etc/init.d/sing-box', ['status']);
                 const status = result.stdout.trim();
-                return renderStatus(status); // Рендерим статус с цветом
+                if (status.toLowerCase() === 'running') {
+                    return '<span style="color: green; font-weight: bold;">Running</span>';
+                } else if (status.toLowerCase() === 'inactive') {
+                    return '<span style="color: red; font-weight: bold;">Inactive</span>';
+                } else {
+                    return `<span style="color: orange;">${status}</span>`;
+                }
             } catch (error) {
                 return '<span style="color: red;">Error fetching status</span>';
             }
         };
 
-        // Кнопка для запуска сервиса
-        o = s.option(form.Button, 'start', 'Start Service');
+        o = s.taboption('service', form.Button, 'start', _('Start Service'));
         o.inputstyle = 'apply';
         o.onclick = async function () {
             try {
                 await fs.exec('/etc/init.d/sing-box', ['start']);
-                ui.addNotification(null, 'Service started.');
-		setTimeout(function() {
-            	location.reload();  // Перезагружаем страницу после задержки
-       		}, 1000);
+                ui.addNotification(null, _('Service started.'));
+                setTimeout(() => location.reload(), 1000);
             } catch (error) {
-                ui.addNotification(null, 'Failed to start service: ' + error.message, 'error');
+                ui.addNotification(null, _('Failed to start service: ') + error.message, 'error');
             }
         };
 
-        // Кнопка для остановки сервиса
-        o = s.option(form.Button, 'stop', 'Stop Service');
+        o = s.taboption('service', form.Button, 'stop', _('Stop Service'));
         o.inputstyle = 'remove';
         o.onclick = async function () {
             try {
                 await fs.exec('/etc/init.d/sing-box', ['stop']);
-                ui.addNotification(null, 'Service stopped.');
-		setTimeout(function() {
-            	location.reload();  // Перезагружаем страницу после задержки
-       		}, 1000);
+                ui.addNotification(null, _('Service stopped.'));
+                setTimeout(() => location.reload(), 1000);
             } catch (error) {
-                ui.addNotification(null, 'Failed to stop service: ' + error.message, 'error');
+                ui.addNotification(null, _('Failed to stop service: ') + error.message, 'error');
             }
         };
 
-        // Поле для отображения и редактирования config.json
-        o = s.option(form.TextValue, 'config_content', 'Config File Content');
-        o.rows = 25;
-        o.wrap = 'off';
+        // Вкладка "Edit Config"
+        const configs = [
+            { name: 'config.json', label: _('Main Config') },
+            { name: 'config2.json', label: _('Second Config') },
+            { name: 'config3.json', label: _('Third Config') }
+        ];
 
-        o.cfgvalue = async function () {
-            try {
-                const content = await fs.read('/etc/sing-box/config.json');
-                return content || ''; // Если файл пустой, вернуть пустую строку
-            } catch (error) {
-                return '// Failed to load config.json: ' + error.message;
+        // Добавление редактируемых конфигураций по вкладкам
+        configs.forEach((config) => {
+            const configTabName = config.name === 'config.json' ? 'main_config' : `config_${config.name}`;
+            
+            // Создаем вкладку для каждой конфигурации
+            s.tab(configTabName, config.label);
+
+            // Поле ввода для конфигурации
+            const option = s.taboption(configTabName, form.TextValue, `content_${config.name}`, config.label);
+            option.rows = 25;
+            option.wrap = 'off';
+            option.cfgvalue = async function () {
+                try {
+                    const content = await fs.read(`/etc/sing-box/${config.name}`);
+                    return content || '';
+                } catch (error) {
+                    return `// Failed to load ${config.name}: ${error.message}`;
+                }
+            };
+
+            // Сохраняем изменения в конфигурации
+            option.write = async function (section_id, value) {
+                try {
+                    await fs.write(`/etc/sing-box/${config.name}`, value);
+                    ui.addNotification(null, `${config.label} saved successfully.`);
+                    await fs.exec('/etc/init.d/sing-box', ['restart']);
+                    ui.addNotification(null, _('Service restarted.'));
+                    setTimeout(() => location.reload(), 1000);
+                } catch (error) {
+                    ui.addNotification(null, `Failed to save ${config.label}: ` + error.message, 'error');
+                }
+            };
+
+            // Если это не "Main Config", добавляем кнопку "Set as Main"
+            if (config.name !== 'config.json') {
+                const setMainButton = s.taboption(configTabName, form.Button, `set_main_${config.name}`, _('Set as Main'));
+                setMainButton.inputstyle = 'apply';
+                setMainButton.onclick = async function () {
+                    try {
+                        const mainContent = await fs.read(`/etc/sing-box/${config.name}`);
+                        const currentConfigContent = await fs.read('/etc/sing-box/config.json');
+                        // Копируем содержимое выбранного файла в config.json
+                        await fs.write('/etc/sing-box/config.json', mainContent);
+                        // Копируем содержимое config.json в выбранный файл
+                        await fs.write(`/etc/sing-box/${config.name}`, currentConfigContent);
+                        ui.addNotification(null, `${config.label} is now the main config.`);
+                        await fs.exec('/etc/init.d/sing-box', ['restart']);
+                        ui.addNotification(null, _('Service restarted.'));
+                        setTimeout(() => location.reload(), 1000);
+                    } catch (error) {
+                        ui.addNotification(null, `Failed to set ${config.label} as the main config: ` + error.message, 'error');
+                    }
+                };
             }
-        };
+        });
 
-        o.write = async function (section_id, value) {
-            try {
-                await fs.write('/etc/sing-box/config.json', value);
-                ui.addNotification(null, 'Config file saved successfully.');
-		await fs.exec('/etc/init.d/sing-box', ['restart']);
-		ui.addNotification(null, 'Service restarted.');
-		setTimeout(function() {
-            	location.reload();  // Перезагружаем страницу после задержки
-       		}, 1000);
-            } catch (error) {
-                ui.addNotification(null, 'Failed to save config file: ' + error.message, 'error');
-            }
-        };
-
+        // Рендеринг формы
         return m.render();
-    }
+    },
 });
