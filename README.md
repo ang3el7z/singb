@@ -1,3 +1,6 @@
+![{47390F65-F6C3-4571-8075-63884812D9A2}](https://github.com/user-attachments/assets/95ae6f13-8763-4246-9ec2-30056f3de934)
+
+
 # sing-box templates (Шаблон для бота)
 
 https://github.com/Vancltkin/singb/blob/main/openwrt.json
