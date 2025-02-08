@@ -4,9 +4,10 @@
 echo "Устанавливаю зависимости..."
 opkg update && opkg install openssh-sftp-server nano curl
 
-echo "Устанавливаю singbox version 1.10.1-1..."
-wget https://github.com/rerulon/openwrt-singbox-configs/raw/main/sing-box_1.10.1-1_aarch64_cortex-a53.ipk
-opkg install sing-box_1.10.1-1_aarch64_cortex-a53.ipk
+# Скачивание и установка sing-box 1.9.7-1
+echo "Скачиваю и устанавливаю sing-box 1.9.7-1..."
+wget -O /tmp/sing-box_1.9.7-1_aarch64_cortex-a53.ipk "https://raw.githubusercontent.com/Vancltkin/singb/main/sing-box_1.9.7-1_aarch64_cortex-a53.ipk"
+opkg install /tmp/sing-box_1.9.7-1_aarch64_cortex-a53.ipk
 
 # Конфигурация sing-box
 echo "Настройка sing-box..."
