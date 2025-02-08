@@ -64,6 +64,18 @@
     },
     "outbounds": [
         {
+            "type": "direct",
+            "tag": "direct"
+        },
+        {
+            "type": "block",
+            "tag": "block"
+        },
+        {
+            "type": "dns",
+            "tag": "dns-out"
+        },
+        {
             "flow": "xtls-rprx-vision",
             "packet_encoding": "",
             "server": "~domain~",
@@ -86,18 +98,6 @@
             "type": "vless",
             "domain_strategy": "ipv4_only",
             "tag": "~outbound~"
-        },
-        {
-            "type": "direct",
-            "tag": "direct"
-        },
-        {
-            "type": "block",
-            "tag": "block"
-        },
-        {
-            "type": "dns",
-            "tag": "dns-out"
         }
     ],
     "route": {
@@ -106,6 +106,14 @@
             {
                 "protocol": "dns",
                 "outbound": "dns-out"
+            },
+            {
+                "protocol": "bittorrent",
+                "outbound": "direct"
+            },
+            {
+                "ip_is_private": true,
+                "outbound": "direct"
             },
             {
                 "protocol": "quic",
