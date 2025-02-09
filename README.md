@@ -3,7 +3,8 @@
 
 # sing-box templates (Шаблон для бота)
 
-https://github.com/Vancltkin/singb/blob/main/openwrt_1.9.7-1.json
+1.9.7-1) https://github.com/Vancltkin/singb/blob/main/openwrt_1.9.7-1.json
+2.11) https://github.com/Vancltkin/singb/blob/main/openwrt_2.11.json
 
 # Установка singbox + singb
 wget -O /root/install.sh https://raw.githubusercontent.com/Vancltkin/singb/main/install.sh && chmod 0755 /root/install.sh && sh /root/install.sh
