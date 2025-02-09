@@ -51,7 +51,7 @@ echo '{}' > /etc/sing-box/config.json
 echo "Создаю новый интерфейс proxy..."
 uci set network.proxy=interface
 uci set network.proxy.proto="none"
-uci set network.proxy.device="singtun0"
+uci set network.proxy.device="sing-tun"
 uci set network.proxy.defaultroute="0"
 uci set network.proxy.delegate="0"
 uci set network.proxy.peerdns="0"
@@ -68,9 +68,9 @@ uci set firewall.@zone[-1].output="ACCEPT"
 uci set firewall.@zone[-1].input="ACCEPT"
 uci set firewall.@zone[-1].masq="1"
 uci set firewall.@zone[-1].mtu_fix="1"
-uci set firewall.@zone[-1].device="singtun0"
+uci set firewall.@zone[-1].device="sing-tun"
 uci set firewall.@zone[-1].family="ipv4"
-uci add_list firewall.@zone[-1].network="singtun0"
+uci add_list firewall.@zone[-1].network="sing-tun"
 uci add firewall forwarding
 uci set firewall.@forwarding[-1].dest="proxy"
 uci set firewall.@forwarding[-1].src="lan"
@@ -84,8 +84,8 @@ nano /etc/sing-box/config.json
 
 # Запрос на подтверждение, что файл настроен правильно
 while true; do
-    read -p "Вы настроили файл /etc/sing-box/config.json ? (y/n, по умолчанию y): " yn
-    yn=${yn:-y}  # Если пользователь не ввел ничего, по умолчанию будет 'y'
+    read -p "Вы настроили файл /etc/sing-box/config.json ? (y/n/пропустить, по умолчанию пропустить): " yn
+    yn=${yn:-skip}  # Если пользователь не ввел ничего, по умолчанию будет 'skip'
     
     case $yn in
         [Yy]* ) 
@@ -98,8 +98,12 @@ while true; do
             echo "Перезапускаю редактор nano для редактирования конфигурации..."
             nano /etc/sing-box/config.json
             ;;
+        [Ss]* | "" ) 
+            echo "Пропуск настройки конфигурации."
+            break
+            ;;
         * ) 
-            echo "Вы настроили файл /etc/sing-box/config.json. Пожалуйста, введите y (да) или n (нет)."
+            echo "Пожалуйста, введите y (да), n (нет) или нажмите Enter для пропуска."
             ;;
     esac
 done
