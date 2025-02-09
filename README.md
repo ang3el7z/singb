@@ -4,6 +4,7 @@
 # sing-box templates (Шаблон для бота)
 
 1.9.7-1) https://github.com/Vancltkin/singb/blob/main/openwrt_1.9.7-1.json
+
 2.11) https://github.com/Vancltkin/singb/blob/main/openwrt_2.11.json
 
 # Установка singbox + singb
