@@ -4,28 +4,34 @@
 echo "Устанавливаю зависимости..."
 opkg update && opkg install openssh-sftp-server nano curl
 
+# Функция для установки конкретной версии
+install_version() {
+    case $1 in
+        1)
+            echo "Скачиваю и устанавливаю sing-box 1.9.7-1..."
+            wget -O /tmp/sing-box_1.9.7-1_aarch64_cortex-a53.ipk "https://raw.githubusercontent.com/Vancltkin/singb/main/sing-box_1.9.7-1_aarch64_cortex-a53.ipk"
+            opkg install /tmp/sing-box_1.9.7-1_aarch64_cortex-a53.ipk
+            ;;
+        2)
+            echo "Устанавливаю последнюю версию sing-box..."
+            opkg install sing-box
+            ;;
+        *)
+            echo "Неверный выбор. Пожалуйста, выберите снова."
+            ;;
+    esac
+}
+
+# Меню выбора версии
 echo "Выберите версию sing-box для установки:"
-echo "1) Установить версию 1.9.7-1"
-echo "2) Установить последнюю версию (latest)"
-read -p "Введите номер варианта: " choice
+echo "1) Установить sing-box 1.9.7-1"
+echo "2) Установить последнюю версию sing-box"
 
-case "$choice" in
-    1)
-        echo "Скачиваю и устанавливаю sing-box 1.9.7-1..."
-        wget -O /tmp/sing-box_1.9.7-1_aarch64_cortex-a53.ipk "https://raw.githubusercontent.com/Vancltkin/singb/main/sing-box_1.9.7-1_aarch64_cortex-a53.ipk"
-        opkg install /tmp/sing-box_1.9.7-1_aarch64_cortex-a53.ipk
-        ;;
-    2)
-        echo "Устанавливаю последнюю версию sing-box..."
-        opkg install sing-box
-        ;;
-    *)
-        echo "Неверный ввод. Пожалуйста, выберите 1 или 2."
-        exit 1
-        ;;
-esac
+# Чтение выбора пользователя
+read -p "Введите номер версии: " choice
 
-echo "Установка завершена!"
+# Установка выбранной версии
+install_version $choice
 
 # Конфигурация sing-box
 echo "Настройка sing-box..."
