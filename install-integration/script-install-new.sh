@@ -211,7 +211,6 @@ uci commit dhcp
 /etc/init.d/odhcpd restart
 uci set network.lan.delegate="0"
 uci commit network
-/etc/init.d/network restart
 /etc/init.d/odhcpd disable
 /etc/init.d/odhcpd stop
 uci -q delete network.globals.ula_prefix
@@ -220,10 +219,11 @@ separator
 echo -e "${GREEN}✓ Настройки применены! Соединение может временно прерваться.${NC}"
 separator
 echo -e "${GREEN}✔ Вы можете получить доступ к веб-интерфейсу по адресу:"
-echo -e "${WHITE}http://192.168.1.1/${NC}"
 separator
-/etc/init.d/network restart
-
+echo -e "${WHITE}http://192.168.1.1/${NC}"
 separator
 echo -e "${BGBLUE}${WHITE}                    ВСЁ УСПЕШНО УСТАНОВЛЕНО!                    ${NC}"
 separator
+/etc/init.d/network restart
+
+
