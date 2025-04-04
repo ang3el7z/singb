@@ -187,6 +187,5 @@ separator
 echo -e "${BGBLUE}${WHITE}                    ВСЁ УСПЕШНО УСТАНОВЛЕНО!                    ${NC}"
 separator
 echo -e "${GREEN}✔ Вы можете получить доступ к веб-интерфейсу по адресу:"
-echo -e "${WHITE}http://192.168.1.1/luci-static/singb/index.html${NC}"
-echo -e "${YELLOW}⚠ Не забудьте настроить конфигурацию в веб-интерфейсе!${NC}"
+echo -e "${WHITE}http://192.168.1.1/${NC}"
 separator
