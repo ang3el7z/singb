@@ -15,7 +15,5 @@ wget -O /root/install.sh https://raw.githubusercontent.com/Vancltkin/singb/main/
 ![CleanShot 2025-01-21 at 11 05 26](https://github.com/user-attachments/assets/fa42cba3-1e4d-4cc9-8eb5-4f5020a0b7bf)
 
 # NEW
-wget -O /root/installColor.sh https://raw.githubusercontent.com/Vancltkin/singb/main/installColor.sh && chmod 0755 /root/installColor.sh && sh /root/installColor.sh
 
-# NEW 2
 wget -O /root/script-install-new.sh https://raw.githubusercontent.com/Vancltkin/singb/main/install-integration/script-install-new.sh && chmod 0755 /root/script-install-new.sh && sh /root/script-install-new.sh
