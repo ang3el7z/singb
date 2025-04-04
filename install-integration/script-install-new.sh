@@ -95,6 +95,8 @@ service firewall reload
 echo -e "${GREEN}✓ Правила файрвола применены${NC}\n"
 
 # Новый блок автоматической настройки конфигурации
+# Новый блок автоматической настройки конфигурации
+AUTO_CONFIG_SUCCESS=0
 separator
 echo -e "${MAGENTA}▶ Настройка конфигурации sing-box${NC}"
 read -p "$(echo -e "${CYAN}▷ Введите URL конфигурации (оставьте пустым для ручной настройки): ${NC}")" CONFIG_URL
@@ -115,6 +117,7 @@ if [ -n "$CONFIG_URL" ]; then
             service sing-box enable
             service sing-box restart
             echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
+            AUTO_CONFIG_SUCCESS=1
         else
             echo -e "${RED}⚠ Ошибка: Некорректный JSON-формат!${NC}"
             echo -e "${YELLOW}▶ Переход к ручному редактированию...${NC}"
@@ -130,27 +133,29 @@ else
     nano /etc/sing-box/config.json
 fi
 
-# Проверка конфигурации (оставлено для ручного режима)
-while true; do
-    separator
-    read -p "$(echo -e "${CYAN}▷ Завершили настройку config.json? [y/N]: ${NC}")" yn
-    case ${yn:-n} in
-        [Yy]* )
-            echo -e "${YELLOW}► Перезапускаю сервис...${NC}"
-            service sing-box enable
-            service sing-box restart
-            echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
-            break
-            ;;
-        [Nn]* )
-            echo -e "${YELLOW}▶ Открываю редактор снова...${NC}"
-            nano /etc/sing-box/config.json
-            ;;
-        * )
-            echo -e "${RED}⚠ Неверный ввод, используйте y или n${NC}"
-            ;;
-    esac
-done
+# Проверка конфигурации ТОЛЬКО при ручной настройке
+if [ "$AUTO_CONFIG_SUCCESS" -eq 0 ]; then
+    while true; do
+        separator
+        read -p "$(echo -e "${CYAN}▷ Завершили настройку config.json? [y/N]: ${NC}")" yn
+        case ${yn:-n} in
+            [Yy]* )
+                echo -e "${YELLOW}► Перезапускаю сервис...${NC}"
+                service sing-box enable
+                service sing-box restart
+                echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
+                break
+                ;;
+            [Nn]* )
+                echo -e "${YELLOW}▶ Открываю редактор снова...${NC}"
+                nano /etc/sing-box/config.json
+                ;;
+            * )
+                echo -e "${RED}⚠ Неверный ввод, используйте y или n${NC}"
+                ;;
+        esac
+    done
+fi
 
 # Остальная часть скрипта без изменений
 # Создание дополнительных конфигов
