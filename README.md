@@ -13,3 +13,6 @@ wget -O /root/install.sh https://raw.githubusercontent.com/Vancltkin/singb/main/
 
 # Other (Если не появился пункт или после обновы, мб когда нибудь фиксану нормально)
 ![CleanShot 2025-01-21 at 11 05 26](https://github.com/user-attachments/assets/fa42cba3-1e4d-4cc9-8eb5-4f5020a0b7bf)
+
+# NEW
+wget -O /root/installColor.sh https://raw.githubusercontent.com/Vancltkin/singb/main/installColor.sh && chmod 0755 /root/installColor.sh && sh /root/installColor.sh
