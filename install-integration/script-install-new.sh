@@ -174,19 +174,29 @@ chmod 0755 /root/luci-app-singb.ipk
 opkg install /root/luci-app-singb.ipk 
 echo -e "${GREEN}✓ UI успешно установлен${NC}"
 
-echo -e "\n${YELLOW}► Обновляю кеш интерфейса...${NC}"
-rm -f /var/luci-indexcache*
-[ -x /etc/init.d/rpcd ] && /etc/init.d/rpcd reload
+separator
+echo -e "${YELLOW}► Глубокая очистка кэша интерфейса...${NC}"
+
+# 1. Удаляем все известные кэш-файлы
+echo -e "${CYAN}▷ Удаляю кэш Luci...${NC}"
+find /tmp -name "luci-*cache*" -exec rm -f {} \; 2>/dev/null
+rm -f /var/lib/uhttpd* 2>/dev/null
+
+# 2. Перезагружаем системные сервисы
+echo -e "${CYAN}▷ Перезапускаю сервисы...${NC}"
+[ -x /etc/init.d/rpcd ] && /etc/init.d/rpcd restart
 [ -x /etc/init.d/uhttpd ] && /etc/init.d/uhttpd restart
-echo -e "${GREEN}✓ Кеш обновлен${NC}"
+[ -x /etc/init.d/lighttpd ] && /etc/init.d/lighttpd restart
+
+# 4. Форсируем обновление DNS
+echo -e "${CYAN}▷ Обновляю DNS...${NC}"
+killall -HUP dnsmasq 2>/dev/null
+
+echo -e "${CYAN}▷ Исправляю права доступа...${NC}"
+chmod 755 /www/luci-static/singb 2>/dev/null
 
 separator
-echo -e "${CYAN}► Отключаю IPv6...${NC}"
-uci set network.lan.ipv6=0
-uci set network.wan.ipv6=0
-uci commit
-/etc/init.d/network restart
-echo -e "${GREEN}✓ IPv6 успешно отключен${NC}"
+echo -e "${GREEN}✓ Глубокая очистка выполнена!${NC}"
 
 separator
 echo -e "${BGBLUE}${WHITE}                    ВСЁ УСПЕШНО УСТАНОВЛЕНО!                    ${NC}"
@@ -194,3 +204,32 @@ separator
 echo -e "${GREEN}✔ Вы можете получить доступ к веб-интерфейсу по адресу:"
 echo -e "${WHITE}http://192.168.1.1/${NC}"
 separator
+
+# Таймер перед критическими операциями
+echo -e "${RED}▶ Изменения вступят после перезагрузки сети через:${NC}"
+for i in {5..1}; do
+    echo -e "${YELLOW}⏳ $i секунд(ы)...${NC}"
+    sleep 1
+done
+
+separator
+echo -e "\n${CYAN}► Отключаю IPv6 и применяю настройки...${NC}"
+uci set 'network.lan.ipv6=0'
+uci set 'network.wan.ipv6=0'
+uci set 'dhcp.lan.dhcpv6=disabled'
+/etc/init.d/odhcpd disable
+uci commit
+uci -q delete dhcp.lan.dhcpv6
+uci -q delete dhcp.lan.ra
+uci commit dhcp
+/etc/init.d/odhcpd restart
+uci set network.lan.delegate="0"
+uci commit network
+/etc/init.d/network restart
+/etc/init.d/odhcpd disable
+/etc/init.d/odhcpd stop
+uci -q delete network.globals.ula_prefix
+uci commit network
+separator
+echo -e "${GREEN}✓ Настройки применены! Соединение может временно прерваться.${NC}"
+/etc/init.d/network restart
