@@ -199,20 +199,6 @@ separator
 echo -e "${GREEN}✓ Глубокая очистка выполнена!${NC}"
 
 separator
-echo -e "${BGBLUE}${WHITE}                    ВСЁ УСПЕШНО УСТАНОВЛЕНО!                    ${NC}"
-separator
-echo -e "${GREEN}✔ Вы можете получить доступ к веб-интерфейсу по адресу:"
-echo -e "${WHITE}http://192.168.1.1/${NC}"
-separator
-
-# Таймер перед критическими операциями
-echo -e "${RED}▶ Изменения вступят после перезагрузки сети через:${NC}"
-for i in {5..1}; do
-    echo -e "${YELLOW}⏳ $i секунд(ы)...${NC}"
-    sleep 1
-done
-
-separator
 echo -e "\n${CYAN}► Отключаю IPv6 и применяю настройки...${NC}"
 uci set 'network.lan.ipv6=0'
 uci set 'network.wan.ipv6=0'
@@ -232,4 +218,12 @@ uci -q delete network.globals.ula_prefix
 uci commit network
 separator
 echo -e "${GREEN}✓ Настройки применены! Соединение может временно прерваться.${NC}"
+separator
+echo -e "${GREEN}✔ Вы можете получить доступ к веб-интерфейсу по адресу:"
+echo -e "${WHITE}http://192.168.1.1/${NC}"
+separator
 /etc/init.d/network restart
+
+separator
+echo -e "${BGBLUE}${WHITE}                    ВСЁ УСПЕШНО УСТАНОВЛЕНО!                    ${NC}"
+separator
