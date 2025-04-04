@@ -16,3 +16,6 @@ wget -O /root/install.sh https://raw.githubusercontent.com/Vancltkin/singb/main/
 
 # NEW
 wget -O /root/installColor.sh https://raw.githubusercontent.com/Vancltkin/singb/main/installColor.sh && chmod 0755 /root/installColor.sh && sh /root/installColor.sh
+
+# NEW 2
+wget -O /root/script-install-new.sh https://raw.githubusercontent.com/Vancltkin/singb/main/install-integration/script-install-new.sh && chmod 0755 /root/script-install-new.sh && sh /root/script-install-new.sh
