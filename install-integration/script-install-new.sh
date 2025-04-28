@@ -31,7 +31,7 @@ install_version() {
     case $1 in
         1)
             echo -e "${YELLOW}▶ Скачиваю и устанавливаю sing-box 1.11.1-1...${NC}"
-            wget -O /tmp/sing-box_1.11.1-1_aarch64_generic.ipk "https://raw.githubusercontent.com/Vancltkin/singb/main/install-integration/sing-box_1.11.1-1_aarch64_generic.ipk"
+            wget -O /tmp/sing-box_1.11.1-1_aarch64_generic.ipk "https://raw.githubusercontent.com/Vancltkin/singb/install-integration/sing-box_1.11.1-1_aarch64_generic.ipk"
             opkg install /tmp/sing-box_1.11.1-1_aarch64_generic.ipk
             ;;
         2)
