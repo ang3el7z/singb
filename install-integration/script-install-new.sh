@@ -30,9 +30,8 @@ echo -e "${GREEN}✓ Зависимости успешно установлен�
 install_version() {
     case $1 in
         1)
-            echo -e "${YELLOW}▶ Скачиваю и устанавливаю sing-box 1.11.1-1...${NC}"
-            wget -O /tmp/sing-box_1.11.1-1_aarch64_generic.ipk "https://raw.githubusercontent.com/Vancltkin/singb/install-integration/sing-box_1.11.1-1_aarch64_generic.ipk"
-            opkg install /tmp/sing-box_1.11.1-1_aarch64_generic.ipk
+            echo -e "${YELLOW}▶ Устанавливаю последнюю версию sing-box...${NC}"
+            opkg install sing-box
             ;;
         2)
             echo -e "${YELLOW}▶ Устанавливаю последнюю версию sing-box...${NC}"
@@ -47,7 +46,7 @@ install_version() {
 # Меню выбора версии
 separator
 echo -e "${MAGENTA}Выберите версию sing-box для установки:${NC}"
-echo -e "${GREEN}1)${NC} Установить sing-box 1.11.1-1"
+echo -e "${GREEN}2)${NC} Установить последнюю версию sing-box"
 echo -e "${GREEN}2)${NC} Установить последнюю версию sing-box"
 echo
 
