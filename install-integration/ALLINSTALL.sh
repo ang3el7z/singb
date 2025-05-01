@@ -94,7 +94,7 @@ configure_proxy() {
     service network restart
     show_success "Сетевой интерфейс настроен"
 }
-configure_proxy()
+configure_proxy
 
 # Настройка фаервола
 configure_firewall() {
@@ -127,7 +127,7 @@ configure_firewall() {
     
     show_success "Правила фаервола применены"
 }
-configure_firewall()
+configure_firewall
 
 # Автоматическая настройка конфигурации
 AUTO_CONFIG_SUCCESS=0
