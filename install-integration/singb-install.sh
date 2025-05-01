@@ -81,47 +81,77 @@ uci commit firewall
 service firewall reload
 echo -e "${GREEN}✓${NC}\n"
 
-# Открытие конфигурационного файла для редактирования
-echo "Открываю конфигурационный файл для редактирования..."
-nano /etc/sing-box/config.json
+# Автоматическая настройка конфигурации
+AUTO_CONFIG_SUCCESS=0
+separator
+echo -e "${MAGENTA}▶ Настройка конфигурации sing-box${NC}"
+read -p "$(echo -e "${CYAN}▷ Введите URL конфигурации (оставьте пустым для ручной настройки): ${NC}")" CONFIG_URL
 
-# Запрос на подтверждение, что файл настроен правильно
-while true; do
-    read -p "Вы настроили файл /etc/sing-box/config.json ? (y/n/пропустить, по умолчанию пропустить): " yn
-    yn=${yn:-skip}  # Если пользователь не ввел ничего, по умолчанию будет 'skip'
+if [ -n "$CONFIG_URL" ]; then
+    echo -e "${YELLOW}▶ Загрузка конфигурации...${NC}"
+    RAW_JSON=$(curl -fsS "$CONFIG_URL" 2>&1)
     
-    case $yn in
-        [Yy]* ) 
-            echo "После записи /etc/sing-box/config.json перезапускаем службу"
+    if [ $? -eq 0 ]; then
+        echo -e "${YELLOW}▶ Проверка формата JSON...${NC}"
+        FORMATTED_JSON=$(echo "$RAW_JSON" | jq '.' 2>/dev/null)
+        
+        if [ $? -eq 0 ]; then
+            echo "$FORMATTED_JSON" > /etc/sing-box/config.json
+            echo -e "${GREEN}✓ Конфигурация успешно применена!${NC}"
+            
+            echo -e "${YELLOW}► Перезапуск сервиса...${NC}"
             service sing-box enable
             service sing-box restart
-            break
-            ;;
-        [Nn]* ) 
-            echo "Перезапускаю редактор nano для редактирования конфигурации..."
+            echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
+            AUTO_CONFIG_SUCCESS=1
+        else
+            echo -e "${RED}⚠ Ошибка: Некорректный JSON-формат!${NC}"
+            echo -e "${YELLOW}▶ Переход к ручному редактированию...${NC}"
             nano /etc/sing-box/config.json
-            ;;
-        [Ss]* | "" ) 
-            echo "Пропуск настройки конфигурации."
-            break
-            ;;
-        * ) 
-            echo "Пожалуйста, введите y (да), n (нет) или нажмите Enter для пропуска."
-            ;;
-    esac
+        fi
+    else
+        echo -e "${RED}⚠ Ошибка загрузки: ${RAW_JSON}${NC}"
+        echo -e "${YELLOW}▶ Переход к ручному редактированию...${NC}"
+        nano /etc/sing-box/config.json
+    fi
+else
+    echo -e "${YELLOW}▶ Ручная настройка конфигурации...${NC}"
+    nano /etc/sing-box/config.json
+fi
+
+# Проверка конфигурации ТОЛЬКО при ручной настройке
+if [ "$AUTO_CONFIG_SUCCESS" -eq 0 ]; then
+    while true; do
+        separator
+        read -p "$(echo -e "${CYAN}▷ Завершили настройку config.json? [y/N]: ${NC}")" yn
+        case ${yn:-n} in
+            [Yy]* )
+                echo -e "${YELLOW}► Перезапускаю сервис...${NC}"
+                service sing-box enable
+                service sing-box restart
+                echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
+                break
+                ;;
+            [Nn]* )
+                echo -e "${YELLOW}▶ Открываю редактор снова...${NC}"
+                nano /etc/sing-box/config.json
+                ;;
+            * )
+                echo -e "${RED}⚠ Неверный ввод, используйте y или n${NC}"
+                ;;
+        esac
+    done
+fi
+
+# Остальная часть скрипта без изменений
+# Создание дополнительных конфигов
+echo -e "\n${CYAN}► Создаю резервные конфигурации...${NC}"
+for i in 2 3; do
+    if [ ! -f "/etc/sing-box/config${i}.json" ]; then
+        echo '{}' > "/etc/sing-box/config${i}.json"
+        echo -e "${GREEN}✓ Создан файл /etc/sing-box/config${i}.json${NC}"
+    fi
 done
-
-# Проверяем, существует ли файл config2.json, если нет - создаем пустой файл
-if [ ! -f /etc/sing-box/config2.json ]; then
-    echo "{}" > /etc/sing-box/config2.json
-    echo "Created /etc/sing-box/config2.json"
-fi
-
-# Проверяем, существует ли файл config3.json, если нет - создаем пустой файл
-if [ ! -f /etc/sing-box/config3.json ]; then
-    echo "{}" > /etc/sing-box/config3.json
-    echo "Created /etc/sing-box/config3.json"
-fi
 
 # Установка singb-ui
 separator
