@@ -81,37 +81,53 @@ show_warning "Конфигурационный файл сброшен"
 separator
 
 # Создание сетевого интерфейса
-show_progress "Создание сетевого интерфейса proxy..."
-uci set network.proxy=interface
-uci set network.proxy.proto="none"
-uci set network.proxy.device="singtun0"
-uci set network.proxy.defaultroute="0"
-uci set network.proxy.delegate="0"
-uci set network.proxy.peerdns="0"
-uci set network.proxy.auto="1"
-uci commit network
-service network restart
-show_success "Сетевой интерфейс настроен"
+configure_proxy() {
+    show_progress "Создание сетевого интерфейса proxy..."
+    uci set network.proxy=interface
+    uci set network.proxy.proto="none"
+    uci set network.proxy.device="singtun0"
+    uci set network.proxy.defaultroute="0"
+    uci set network.proxy.delegate="0"
+    uci set network.proxy.peerdns="0"
+    uci set network.proxy.auto="1"
+    uci commit network
+    service network restart
+    show_success "Сетевой интерфейс настроен"
+}
+configure_proxy()
 
 # Настройка фаервола
-show_progress "Конфигурация правил фаервола..."
-uci add firewall zone
-uci set firewall.@zone[-1].name="proxy"
-uci set firewall.@zone[-1].forward="REJECT"
-uci set firewall.@zone[-1].output="ACCEPT"
-uci set firewall.@zone[-1].input="ACCEPT"
-uci set firewall.@zone[-1].masq="1"
-uci set firewall.@zone[-1].mtu_fix="1"
-uci set firewall.@zone[-1].device="singtun0"
-uci set firewall.@zone[-1].family="ipv4"
-uci add_list firewall.@zone[-1].network="singtun0"
-uci add firewall forwarding
-uci set firewall.@forwarding[-1].dest="proxy"
-uci set firewall.@forwarding[-1].src="lan"
-uci set firewall.@forwarding[-1].family="ipv4"
-uci commit firewall
-service firewall reload
-show_success "Правила фаервола применены"
+configure_firewall() {
+    show_progress "Конфигурация правил фаервола..."
+    
+    # Добавляем зону только если её не существует
+    if ! uci -q get firewall.proxy >/dev/null; then
+        uci add firewall zone >/dev/null
+        uci set firewall.@zone[-1].name="proxy"
+        uci set firewall.@zone[-1].forward="REJECT"
+        uci set firewall.@zone[-1].output="ACCEPT"
+        uci set firewall.@zone[-1].input="ACCEPT"
+        uci set firewall.@zone[-1].masq="1"
+        uci set firewall.@zone[-1].mtu_fix="1"
+        uci set firewall.@zone[-1].device="singtun0"
+        uci set firewall.@zone[-1].family="ipv4"
+        uci add_list firewall.@zone[-1].network="singtun0"
+    fi
+
+    # Добавляем forwarding только если не существует
+    if ! uci -q get firewall.@forwarding[-1].dest="proxy" >/dev/null; then
+        uci add firewall forwarding >/dev/null
+        uci set firewall.@forwarding[-1].dest="proxy"
+        uci set firewall.@forwarding[-1].src="lan"
+        uci set firewall.@forwarding[-1].family="ipv4"
+    fi
+
+    uci commit firewall >/dev/null 2>&1
+    service firewall reload >/dev/null 2>&1
+    
+    show_success "Правила фаервола применены"
+}
+configure_firewall()
 
 # Автоматическая настройка конфигурации
 AUTO_CONFIG_SUCCESS=0
