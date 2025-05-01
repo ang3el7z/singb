@@ -18,8 +18,8 @@ CROSS="✗"
 INDENT="  "
 
 # Функция разделителя
-separator() {
-    echo -e "${BG_ACCENT}${FG_MAIN}\n${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${SEP_CHAR}${RESET}\n"
+separator_accent() {
+    echo -e "\033[48;5;31m\033[38;5;231m\033[1m$(printf '%*s\n' "$(tput cols)" | tr ' ' '▀')\033[0m"
 }
 
 header() {
