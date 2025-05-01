@@ -16,148 +16,118 @@ separator() {
     echo -e "${BGBLUE}${WHITE}=======================================================${NC}\n"
 }
 
-echo -e "${CYAN}► Обновляем список пакетов...${NC}"
-opkg update && opkg install openssh-sftp-server nano curl jq
-echo -e "${GREEN}✓ Успешно обновлены${NC}\n"
-
+clear
 separator
-echo -e "${CYAN}► Далее устанавливаем необходимые для работы sing-box модули ядра и пакет совместимости с iptables...${NC}"
-opkg install kmod-inet-diag kmod-netlink-diag kmod-tun iptables-nft
-echo -e "${GREEN}✓ Успешно установлены${NC}\n"
-
-echo -e "${CYAN}► Далее переходим к установке sing-box...${NC}"
- opkg install sing-box
-echo -e "${GREEN}✓ Успешно ${NC}\n"
-
+echo -e "${BGBLUE}${WHITE} Начало установки sing-box ${NC}"
 separator
+
+# Обновление репозиториев и установка зависимостей
+echo -e "${CYAN}► Устанавливаю зависимости...${NC}"
+opkg update && opkg install openssh-sftp-server nano curl
+echo -e "${GREEN}✓${NC}\n"
+separator
+
+echo -e "${CYAN}► Устанавливаю последнюю версию sing-box...${NC}"
+opkg install sing-box
+echo -e "${GREEN}✓${NC}\n"
+
+# Конфигурация sing-box
 echo -e "${CYAN}► Настройка sing-box...${NC}"
+echo "Настройка sing-box..."
 uci set sing-box.main.enabled="1"
 uci set sing-box.main.user="root"
 uci commit sing-box
-echo -e "${GREEN}✓ Конфигурация применена${NC}\n"
+echo -e "${GREEN}✓${NC}\n"
 
-echo -e "${YELLOW}► Отключаю сервис sing-box...${NC}"
+# Отключение сервиса sing-box
+echo "Отключаю сервис sing-box..."
 service sing-box disable
-echo -e "${GREEN}✓ Сервис отключен${NC}\n"
 
-echo -e "${YELLOW}► Очищаю конфигурационный файл...${NC}"
+# Очистка конфигурационного файла sing-box
+echo "Очищаю конфигурационный файл /etc/sing-box/config.json..."
 echo '{}' > /etc/sing-box/config.json
-echo -e "${GREEN}✓ Файл /etc/sing-box/config.json очищен${NC}\n"
-
 separator
-echo -e "${CYAN}► Создаю сетевой интерфейс proxy...${NC}"
+
+# Создание нового интерфейса "proxy"
+echo -e "${CYAN}► Создаю новый интерфейс proxy...${NC}"
 uci set network.proxy=interface
 uci set network.proxy.proto="none"
 uci set network.proxy.device="singtun0"
+uci set network.proxy.defaultroute="0"
+uci set network.proxy.delegate="0"
+uci set network.proxy.peerdns="0"
+uci set network.proxy.auto="1"
 uci commit network
 service network restart
-echo -e "${GREEN}✓ Сетевой интерфейс создан${NC}\n"
+echo -e "${GREEN}✓${NC}\n"
 
-
-echo -e "${CYAN}► Настройка файрвола...${NC}"
-# Создаем зону "proxy"
-uci set firewall.proxy=zone
-uci set firewall.proxy.name='proxy'
-uci add_list firewall.proxy.network='tunnel'  # Добавляем элемент в список network
-uci set firewall.proxy.forward='REJECT'
-uci set firewall.proxy.output='ACCEPT'
-uci set firewall.proxy.input='REJECT'
-uci set firewall.proxy.masq='1'
-uci set firewall.proxy.mtu_fix='1'
-uci set firewall.proxy.device='singtun0'
-uci set firewall.proxy.family='ipv4'
-
-# Создаем правило форвардинга "lan-proxy"
-uci set firewall.lan_proxy=forwarding
-uci set firewall.lan_proxy.name='lan-proxy'
-uci set firewall.lan_proxy.dest='proxy'
-uci set firewall.lan_proxy.src='lan'
-uci set firewall.lan_proxy.family='ipv4'
-
-# Сохраняем изменения и применяем
+# Настройка правил файрвола
+echo -e "${CYAN}► Настройка правил файрвола...${NC}"
+uci add firewall zone
+uci set firewall.@zone[-1].name="proxy"
+uci set firewall.@zone[-1].forward="REJECT"
+uci set firewall.@zone[-1].output="ACCEPT"
+uci set firewall.@zone[-1].input="ACCEPT"
+uci set firewall.@zone[-1].masq="1"
+uci set firewall.@zone[-1].mtu_fix="1"
+uci set firewall.@zone[-1].device="singtun0"
+uci set firewall.@zone[-1].family="ipv4"
+uci add_list firewall.@zone[-1].network="singtun0"
+uci add firewall forwarding
+uci set firewall.@forwarding[-1].dest="proxy"
+uci set firewall.@forwarding[-1].src="lan"
+uci set firewall.@forwarding[-1].family="ipv4"
 uci commit firewall
-/etc/init.d/firewall reload
-echo -e "${GREEN}✓ Правила файрвола применены${NC}\n"
+service firewall reload
+echo -e "${GREEN}✓${NC}\n"
 
+# Открытие конфигурационного файла для редактирования
+echo "Открываю конфигурационный файл для редактирования..."
+nano /etc/sing-box/config.json
 
-# Новый блок автоматической настройки конфигурации
-AUTO_CONFIG_SUCCESS=0
-separator
-echo -e "${MAGENTA}▶ Настройка конфигурации sing-box${NC}"
-read -p "$(echo -e "${CYAN}▷ Введите URL конфигурации (оставьте пустым для ручной настройки): ${NC}")" CONFIG_URL
-
-if [ -n "$CONFIG_URL" ]; then
-    echo -e "${YELLOW}▶ Загрузка конфигурации...${NC}"
-    RAW_JSON=$(curl -fsS "$CONFIG_URL" 2>&1)
+# Запрос на подтверждение, что файл настроен правильно
+while true; do
+    read -p "Вы настроили файл /etc/sing-box/config.json ? (y/n/пропустить, по умолчанию пропустить): " yn
+    yn=${yn:-skip}  # Если пользователь не ввел ничего, по умолчанию будет 'skip'
     
-    if [ $? -eq 0 ]; then
-        echo -e "${YELLOW}▶ Проверка формата JSON...${NC}"
-        FORMATTED_JSON=$(echo "$RAW_JSON" | jq '.' 2>/dev/null)
-        
-        if [ $? -eq 0 ]; then
-            echo "$FORMATTED_JSON" > /etc/sing-box/config.json
-            echo -e "${GREEN}✓ Конфигурация успешно применена!${NC}"
-            
-            echo -e "${YELLOW}► Перезапуск сервиса...${NC}"
+    case $yn in
+        [Yy]* ) 
+            echo "После записи /etc/sing-box/config.json перезапускаем службу"
             service sing-box enable
             service sing-box restart
-            echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
-            AUTO_CONFIG_SUCCESS=1
-        else
-            echo -e "${RED}⚠ Ошибка: Некорректный JSON-формат!${NC}"
-            echo -e "${YELLOW}▶ Переход к ручному редактированию...${NC}"
+            break
+            ;;
+        [Nn]* ) 
+            echo "Перезапускаю редактор nano для редактирования конфигурации..."
             nano /etc/sing-box/config.json
-        fi
-    else
-        echo -e "${RED}⚠ Ошибка загрузки: ${RAW_JSON}${NC}"
-        echo -e "${YELLOW}▶ Переход к ручному редактированию...${NC}"
-        nano /etc/sing-box/config.json
-    fi
-else
-    echo -e "${YELLOW}▶ Ручная настройка конфигурации...${NC}"
-    nano /etc/sing-box/config.json
-fi
-
-# Проверка конфигурации ТОЛЬКО при ручной настройке
-if [ "$AUTO_CONFIG_SUCCESS" -eq 0 ]; then
-    while true; do
-        separator
-        read -p "$(echo -e "${CYAN}▷ Завершили настройку config.json? [y/N]: ${NC}")" yn
-        case ${yn:-n} in
-            [Yy]* )
-                echo -e "${YELLOW}► Перезапускаю сервис...${NC}"
-                service sing-box enable
-                service sing-box restart
-                echo -e "${GREEN}✓ Сервис успешно запущен!${NC}"
-                break
-                ;;
-            [Nn]* )
-                echo -e "${YELLOW}▶ Открываю редактор снова...${NC}"
-                nano /etc/sing-box/config.json
-                ;;
-            * )
-                echo -e "${RED}⚠ Неверный ввод, используйте y или n${NC}"
-                ;;
-        esac
-    done
-fi
-
-# Остальная часть скрипта без изменений
-# Создание дополнительных конфигов
-echo -e "\n${CYAN}► Создаю резервные конфигурации...${NC}"
-for i in 2 3; do
-    if [ ! -f "/etc/sing-box/config${i}.json" ]; then
-        echo '{}' > "/etc/sing-box/config${i}.json"
-        echo -e "${GREEN}✓ Создан файл /etc/sing-box/config${i}.json${NC}"
-    fi
+            ;;
+        [Ss]* | "" ) 
+            echo "Пропуск настройки конфигурации."
+            break
+            ;;
+        * ) 
+            echo "Пожалуйста, введите y (да), n (нет) или нажмите Enter для пропуска."
+            ;;
+    esac
 done
 
+# Проверяем, существует ли файл config2.json, если нет - создаем пустой файл
+if [ ! -f /etc/sing-box/config2.json ]; then
+    echo "{}" > /etc/sing-box/config2.json
+    echo "Created /etc/sing-box/config2.json"
+fi
+
+# Проверяем, существует ли файл config3.json, если нет - создаем пустой файл
+if [ ! -f /etc/sing-box/config3.json ]; then
+    echo "{}" > /etc/sing-box/config3.json
+    echo "Created /etc/sing-box/config3.json"
+fi
+
+# Установка singb-ui
 separator
-echo -e "${CYAN}► Устанавливаю singb UI...${NC}"
-wget -O /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/latest/download/luci-app-singb.ipk 
-chmod 0755 /root/luci-app-singb.ipk 
-opkg install /root/luci-app-singb.ipk 
-echo -e "${GREEN}✓ UI успешно установлен${NC}"
+echo -e "${CYAN}► Установка singb...${NC}"
+wget -O /root/luci-app-singb.ipk https://github.com/Vancltkin/singb/releases/latest/download/luci-app-singb.ipk && chmod 0755 /root/luci-app-singb.ipk && opkg update && opkg install /root/luci-app-singb.ipk && /etc/init.d/uhttpd restart
+echo -e "${GREEN}✓${NC}\n"
 
 separator
 echo -e "${YELLOW}► Глубокая очистка кэша интерфейса...${NC}"
@@ -181,7 +151,7 @@ echo -e "${CYAN}▷ Исправляю права доступа...${NC}"
 chmod 755 /www/luci-static/singb 2>/dev/null
 
 separator
-echo -e "${GREEN}✓ Глубокая очистка выполнена!${NC}"
+echo -e "${GREEN}✓${NC}"
 
 separator
 echo -e "\n${CYAN}► Отключаю IPv6 и применяю настройки...${NC}"
