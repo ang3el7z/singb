@@ -23,7 +23,7 @@ separator
 
 # Обновление репозиториев и установка зависимостей
 echo -e "${CYAN}► Устанавливаю зависимости...${NC}"
-opkg update && opkg install openssh-sftp-server nano curl
+opkg update && opkg install openssh-sftp-server nano curl jq
 echo -e "${GREEN}✓${NC}\n"
 separator
 
