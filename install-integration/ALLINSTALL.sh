@@ -91,8 +91,11 @@ configure_proxy() {
     uci set network.proxy.peerdns="0"
     uci set network.proxy.auto="1"
     uci commit network
-    service network restart
-    show_success "Сетевой интерфейс настроен"
+    if service network restart; then
+        show_success "Сетевой интерфейс настроен"
+    else
+        show_error "Ошибка настройки сети"
+    fi
 }
 configure_proxy
 
