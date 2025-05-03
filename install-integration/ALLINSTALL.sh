@@ -191,7 +191,7 @@ if [ "$AUTO_CONFIG_SUCCESS" -eq 0 ]; then
 fi
 
 # Создание резервных конфигов
-show_progress "Создание резервных конфигураций..."
+show_progress "Создание файлов резервных конфигураций..."
 for i in 2 3; do
     if [ ! -f "/etc/sing-box/config${i}.json" ]; then
         echo '{}' > "/etc/sing-box/config${i}.json"
@@ -199,8 +199,14 @@ for i in 2 3; do
 done
 show_success "Резервные файлы созданы"
 
-show_progress "Создание обновлений для конфигураций и найстройка..."
-wget -O /root/usr/bin/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb-updater
+show_progress "Создание url файлов..."
+touch /etc/sing-box/url_config.json
+touch /etc/sing-box/url_config2.json
+touch /etc/sing-box/url_config3.json
+show_success "Обновления созданы"
+
+show_progress "Создание singb-updater..."
+wget -O /usr/bin/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb-updater
 show_success "Обновления созданы"
 
 show_progress "Настройка доступов..."
