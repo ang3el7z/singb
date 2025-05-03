@@ -6,7 +6,7 @@
 
 return view.extend({
     async render() {
-        var m, s, o;
+        let m, s, o;
 
         // Создаем форму
         m = new form.Map('singb', 'Singb Configuration');
@@ -25,10 +25,10 @@ return view.extend({
         o.cfgvalue = async function () {
             try {
                 const result = await fs.exec('/etc/init.d/sing-box', ['status']);
-                const status = result.stdout.trim();
-                if (status.toLowerCase() === 'running') {
+                const status = result.stdout.trim().toLowerCase();
+                if (status === 'running') {
                     return '<span style="color: green; font-weight: bold;">Running</span>';
-                } else if (status.toLowerCase() === 'inactive') {
+                } else if (status === 'inactive') {
                     return '<span style="color: red; font-weight: bold;">Inactive</span>';
                 } else {
                     return `<span style="color: orange;">${status}</span>`;
@@ -64,33 +64,79 @@ return view.extend({
 
         // Вкладка "Edit Config"
         const configs = [
-            { name: 'config.json', label: _('Main Config') },
+            { name: 'config.json',  label: _('Main Config')   },
             { name: 'config2.json', label: _('Second Config') },
-            { name: 'config3.json', label: _('Third Config') }
+            { name: 'config3.json', label: _('Third Config')  }
         ];
 
-        // Добавление редактируемых конфигураций по вкладкам
         configs.forEach((config) => {
-            const configTabName = config.name === 'config.json' ? 'main_config' : `config_${config.name}`;
-            
-            // Создаем вкладку для каждой конфигурации
-            s.tab(configTabName, config.label);
+            const tabName = config.name === 'config.json'
+                ? 'main_config'
+                : `config_${config.name}`;
 
-            // Поле ввода для конфигурации
-            const option = s.taboption(configTabName, form.TextValue, `content_${config.name}`, config.label);
-            option.rows = 25;
-            option.wrap = 'off';
-            option.cfgvalue = async function () {
+            // Создаем вкладку для каждой конфигурации
+            s.tab(tabName, config.label);
+
+            // Поле для URL подписки
+            const urlKey = `subscribe_url_${config.name}`;
+            o = s.taboption(tabName, form.Value, urlKey, _('Subscribe URL'));
+            o.datatype = 'url';
+            o.placeholder = 'https://example.com/subscribe';
+            o.cfgvalue = async function () {
                 try {
-                    const content = await fs.read(`/etc/sing-box/${config.name}`);
-                    return content || '';
+                    return await fs.read(`/etc/sing-box/url_${config.name}`) || '';
+                } catch {
+                    return '';
+                }
+            };
+            o.write = async function (_, value) {
+                await fs.write(`/etc/sing-box/url_${config.name}`, value.trim());
+            };
+
+            // Кнопка Update
+            o = s.taboption(tabName, form.Button, `update_${config.name}`, _('Update Config'));
+            o.inputtitle = _('Update from URL');
+            o.inputstyle = 'reload';
+            o.onclick = async function () {
+                try {
+                    const urlPath    = `/etc/sing-box/url_${config.name}`;
+                    const targetFile = `/etc/sing-box/${config.name}`;
+                    const url        = (await fs.read(urlPath)).trim();
+
+                    if (!url) {
+                        throw new Error('URL is empty');
+                    }
+
+                    const result = await fs.exec('/usr/bin/singb-updater', [urlPath, targetFile]);
+                    if (result.code !== 0) {
+                        const details = result.stderr || result.stdout || 'Unknown error';
+                        throw new Error(`Update failed: ${details}`);
+                    }
+
+                    if (config.name === 'config.json') {
+                        await fs.exec('/etc/init.d/sing-box', ['restart']);
+                        ui.addNotification(null, _('Service restarted.'));
+                    }
+
+                    setTimeout(() => location.reload(), 500);
+                } catch (e) {
+                    ui.addNotification(null, _('Error: ') + e.message, 'error');
+                }
+            };
+
+            // Поле редактирования контента конфигурации
+            const contentKey = `content_${config.name}`;
+            o = s.taboption(tabName, form.TextValue, contentKey, config.label);
+            o.rows = 25;
+            o.wrap = 'off';
+            o.cfgvalue = async function () {
+                try {
+                    return (await fs.read(`/etc/sing-box/${config.name}`)) || '';
                 } catch (error) {
                     return `// Failed to load ${config.name}: ${error.message}`;
                 }
             };
-
-            // Сохраняем изменения в конфигурации
-            option.write = async function (section_id, value) {
+            o.write = async function (_, value) {
                 try {
                     await fs.write(`/etc/sing-box/${config.name}`, value);
                     ui.addNotification(null, `${config.label} saved successfully.`);
@@ -102,18 +148,18 @@ return view.extend({
                 }
             };
 
-            // Если это не "Main Config", добавляем кнопку "Set as Main"
+            // Кнопка "Set as Main" для дополнительных конфигов
             if (config.name !== 'config.json') {
-                const setMainButton = s.taboption(configTabName, form.Button, `set_main_${config.name}`, _('Set as Main'));
-                setMainButton.inputstyle = 'apply';
-                setMainButton.onclick = async function () {
+                const btn = s.taboption(tabName, form.Button, `set_main_${config.name}`, _('Set as Main'));
+                btn.inputstyle = 'apply';
+                btn.onclick = async function () {
                     try {
-                        const mainContent = await fs.read(`/etc/sing-box/${config.name}`);
-                        const currentConfigContent = await fs.read('/etc/sing-box/config.json');
-                        // Копируем содержимое выбранного файла в config.json
-                        await fs.write('/etc/sing-box/config.json', mainContent);
-                        // Копируем содержимое config.json в выбранный файл
-                        await fs.write(`/etc/sing-box/${config.name}`, currentConfigContent);
+                        const newMain = await fs.read(`/etc/sing-box/${config.name}`);
+                        const oldMain = await fs.read('/etc/sing-box/config.json');
+
+                        await fs.write('/etc/sing-box/config.json', newMain);
+                        await fs.write(`/etc/sing-box/${config.name}`, oldMain);
+
                         ui.addNotification(null, `${config.label} is now the main config.`);
                         await fs.exec('/etc/init.d/sing-box', ['restart']);
                         ui.addNotification(null, _('Service restarted.'));
@@ -127,5 +173,5 @@ return view.extend({
 
         // Рендеринг формы
         return m.render();
-    },
+    }
 });
