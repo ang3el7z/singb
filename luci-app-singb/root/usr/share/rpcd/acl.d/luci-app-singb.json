@@ -6,6 +6,7 @@
                 "service": ["list", "get", "status"]
             },
             "file": {
+                "/etc/init.d/sing-box": [ "exec" ],
                 "/etc/sing-box/*": ["read"],
                 "/usr/bin/singb-updater*": ["exec"],
                 "/tmp/*": ["read"]
