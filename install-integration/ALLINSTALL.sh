@@ -148,7 +148,9 @@ if [ -n "$CONFIG_URL" ]; then
         if [ $? -eq 0 ]; then
             echo "$FORMATTED_JSON" > /etc/sing-box/config.json
             show_success "Конфигурация успешно загружена"
-            
+
+            echo "$CONFIG_URL"  > "/etc/sing-box/url_config.json"
+              
             show_progress "Активация сервиса"
             service sing-box enable
             service sing-box restart
