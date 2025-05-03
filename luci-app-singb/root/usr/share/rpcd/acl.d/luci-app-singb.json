@@ -2,9 +2,6 @@
     "luci-app-singb": {
         "description": "Sing-box management access",
         "read": {
-            "ubus": {
-                "service": ["list", "get", "status"]
-            },
             "file": {
                 "/etc/init.d/sing-box": [ "exec" ],
                 "/etc/sing-box/*": ["read"],
@@ -14,9 +11,6 @@
             "uci": ["singb"]
         },
         "write": {
-            "ubus": {
-                "service": ["start", "stop", "restart"]
-            },
             "file": {
                 "/etc/sing-box/*": ["write"],
                 "/tmp/*": ["write"]
