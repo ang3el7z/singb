@@ -199,6 +199,16 @@ for i in 2 3; do
 done
 show_success "Резервные файлы созданы"
 
+show_progress "Создание обновлений для конфигураций и найстройка..."
+wget -O /root/usr/bin/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb-updater
+show_success "Обновления созданы"
+
+show_progress "Настройка доступов..."
+chmod 755 /usr/bin/singb-updater
+chown root:root /usr/bin/singb-updater
+chmod 644 /etc/sing-box/*
+show_success "Доступы получены"
+
 # Установка веб-интерфейса
 separator
 show_progress "Установка веб-интерфейса singb..."
