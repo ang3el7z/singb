@@ -1,22 +1,26 @@
 {
-  "luci-app-singb": {
-    "description": "Grant UCI and RPC access to LuCI app singb",
-    "read": {
-      "file": {
-        "/etc/init.d/sing-box": [ "exec" ],
-        "/etc/sing-box/config.json": [ "read" ],
-        "/etc/sing-box/config2.json": [ "read" ],
-	"/etc/sing-box/config3.json": [ "read" ]
-      },
-      "uci": [ "singb" ]
-    },
-    "write": {
-      "file": {
-        "/etc/sing-box/config.json": [ "write" ],
-        "/etc/sing-box/config2.json": [ "write" ],
-	"/etc/sing-box/config3.json": [ "write" ]
-      },
-      "uci": [ "singb" ]
+    "luci-app-singb": {
+        "description": "Sing-box management access",
+        "read": {
+            "ubus": {
+                "service": ["list", "get", "status"]
+            },
+            "file": {
+                "/etc/sing-box/*": ["read"],
+                "/usr/bin/singb-updater*": ["exec"],
+                "/tmp/*": ["read"]
+            },
+            "uci": ["singb"]
+        },
+        "write": {
+            "ubus": {
+                "service": ["start", "stop", "restart"]
+            },
+            "file": {
+                "/etc/sing-box/*": ["write"],
+                "/tmp/*": ["write"]
+            },
+            "uci": ["singb"]
+        }
     }
-  }
 }
