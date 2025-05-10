@@ -5,7 +5,7 @@
             "file": {
                 "/etc/init.d/sing-box": [ "exec" ],
                 "/etc/sing-box/*": ["read"],
-                "/usr/bin/singb-updater*": ["exec"],
+                "/usr/bin/singb/singb-updater*": ["exec"],
                 "/tmp/*": ["read"]
             },
             "uci": ["singb"]

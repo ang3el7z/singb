@@ -96,7 +96,7 @@ function createUpdateConfigButton(section, tabName, config) {
     try {
       const url = (await loadFile(`/etc/sing-box/url_${config.name}`)).trim();
       if (!url) throw new Error('URL is empty');
-      const result = await fs.exec('/usr/bin/singb-updater', [
+      const result = await fs.exec('/usr/bin/singb/singb-updater', [
         `/etc/sing-box/url_${config.name}`,
         `/etc/sing-box/${config.name}`
       ]);

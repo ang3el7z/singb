@@ -229,12 +229,12 @@ touch /etc/sing-box/url_config3.json
 show_success "Обновления созданы"
 
 show_progress "Создание singb-updater..."
-wget -O /usr/bin/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb-updater
+wget -O /usr/bin/singb/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb-updater
 show_success "Обновления созданы"
 
 show_progress "Настройка доступов..."
-chmod 755 /usr/bin/singb-updater
-chown root:root /usr/bin/singb-updater
+chmod 755 /usr/bin/singb/singb-updater
+chown root:root /usr/bin/singb/singb-updater
 chmod 644 /etc/sing-box/*
 show_success "Доступы получены"
 
