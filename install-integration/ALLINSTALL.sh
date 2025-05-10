@@ -137,7 +137,7 @@ separator
 AUTO_CONFIG_SUCCESS=0
 sleep 1
 show_progress "Импорт конфигурации sing-box"
-sleep 1
+sleep 2
 read -p "$(echo -e "  ${FG_ACCENT}▷ URL конфигурации (Enter для ручного ввода): ${RESET}")" CONFIG_URL
 
 # Проверяем, что URL не пустой
