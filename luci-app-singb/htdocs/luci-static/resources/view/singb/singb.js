@@ -14,7 +14,18 @@ const isValidUrl = (url) => {
   }
 };
 
+const isValidConfig = (config) => {
+    try {
+      JSON.parse(config);
+      if (config.includes("{}")) return false;
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
 const notify = (type, msg) => ui.addNotification(null, msg, type);
+
 const getInputValueByKey = (key) => {
   const id = `widget.cbid.singb.main.${key}`;
   return document.querySelector(`#${CSS.escape(id)}`)?.value.trim();
@@ -112,6 +123,7 @@ function createSaveContentButton(section, tabName, config) {
   btn.onclick = async () => {
     const elVal = getInputValueByKey(key);
     if (!elVal) return notify('error', 'Config is empty');
+    if (!isValidConfig(elVal)) return notify('error', 'Invalid Config');
     await saveFile(`/etc/sing-box/${config.name}`, elVal, 'Config saved');
     if (config.name === 'config.json') {
       await fs.exec('/etc/init.d/sing-box', ['reload']);
