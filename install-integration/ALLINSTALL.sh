@@ -133,36 +133,57 @@ configure_firewall() {
 configure_firewall
 
 # Автоматическая настройка конфигурации
-AUTO_CONFIG_SUCCESS=0
 separator
+AUTO_CONFIG_SUCCESS=0
+sleep 1
 show_progress "Импорт конфигурации sing-box"
+sleep 1
 read -p "$(echo -e "  ${FG_ACCENT}▷ URL конфигурации (Enter для ручного ввода): ${RESET}")" CONFIG_URL
 
+# Проверяем, что URL не пустой
 if [ -n "$CONFIG_URL" ]; then
-    show_progress "Загрузка конфигурации с ${CONFIG_URL}"
-    RAW_JSON=$(curl -fsS "$CONFIG_URL" 2>&1)
-    
-    if [ $? -eq 0 ]; then
-        FORMATTED_JSON=$(echo "$RAW_JSON" | jq '.' 2>/dev/null)
+    MAX_ATTEMPTS=2  # Максимальное количество попыток загрузки
+    ATTEMPT=1  # Счетчик попыток
+    SUCCESS=0  # Флаг успешной загрузки
+
+    # Пытаемся загрузить конфигурацию
+    while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+        show_progress "Загрузка конфигурации с ${CONFIG_URL} (Попытка $ATTEMPT из $MAX_ATTEMPTS)"
+        RAW_JSON=$(curl -fsS "$CONFIG_URL" 2>&1)
         
         if [ $? -eq 0 ]; then
-            echo "$FORMATTED_JSON" > /etc/sing-box/config.json
-            show_success "Конфигурация успешно загружена"
-
-            echo "$CONFIG_URL"  > "/etc/sing-box/url_config.json"
-              
-            show_progress "Активация сервиса"
-            service sing-box enable
-            service sing-box restart
-            show_success "Сервис успешно запущен"
-            AUTO_CONFIG_SUCCESS=1
+            FORMATTED_JSON=$(echo "$RAW_JSON" | jq '.' 2>/dev/null)
+            
+            if [ $? -eq 0 ]; then
+                echo "$FORMATTED_JSON" > /etc/sing-box/config.json
+                show_success "Конфигурация успешно загружена"
+                echo "$CONFIG_URL" > "/etc/sing-box/url_config.json"
+                
+                show_progress "Активация сервиса"
+                service sing-box enable
+                service sing-box restart
+                show_success "Сервис успешно запущен"
+                AUTO_CONFIG_SUCCESS=1
+                SUCCESS=1
+                break  # Выход из цикла, если загрузка успешна
+            else
+                show_error "Ошибка формата конфигурации"
+            fi
         else
-            show_error "Ошибка формата конфигурации"
-            show_warning "Переход к ручному редактированию"
-            nano /etc/sing-box/config.json
+            show_error "Ошибка загрузки: ${RAW_JSON}"
         fi
-    else
-        show_error "Ошибка загрузки: ${RAW_JSON}"
+
+        # Если загрузка не удалась, увеличиваем счетчик попыток
+        if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+            show_warning "Попробую снова..."
+        fi
+        
+        ATTEMPT=$((ATTEMPT + 1))  # Увеличиваем счетчик попыток
+    done
+
+    # Если все попытки не удались, переходим к ручной настройке
+    if [ $SUCCESS -eq 0 ]; then
+        show_warning "Переход к ручной настройке конфигурации"
         nano /etc/sing-box/config.json
     fi
 else
@@ -251,6 +272,5 @@ show_success "IPv6 отключен"
 separator
 echo -e "${BG_ACCENT}${FG_MAIN} Установка завершена! Доступ к панели: http://192.168.1.1 ${RESET}"
 separator
-/etc/init.d/network restart
-service sing-box restart
+/etc/init.d/network restart && service sing-box restart
 echo -e "${BG_ACCENT}${FG_MAIN} ✓ ✓ ✓${RESET}"
