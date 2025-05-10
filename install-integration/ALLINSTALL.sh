@@ -269,8 +269,8 @@ uci set 'dhcp.lan.dhcpv6=disabled'
 uci commit
 show_success "IPv6 отключен"
 
+/etc/init.d/network restart && service sing-box restart
+
 separator
 echo -e "${BG_ACCENT}${FG_MAIN} Установка завершена! Доступ к панели: http://192.168.1.1 ${RESET}"
 separator
-/etc/init.d/network restart && service sing-box restart
-echo -e "${BG_ACCENT}${FG_MAIN} ✓ ✓ ✓${RESET}"
