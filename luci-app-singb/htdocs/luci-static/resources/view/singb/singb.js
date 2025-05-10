@@ -211,12 +211,12 @@ function createAutoUpdaterSection(section) {
     const isRunning = status === 'running';
 
     if (!isRunning) {
-      const installBtn = section.taboption('autoupdater', form.Button, 'install_updater', 'Install Auto-Updater');
+      const installBtn = section.taboption('autoupdater', form.Button, 'install_autoupdater', 'Install Auto-Updater');
       installBtn.inputstyle = 'positive';
       installBtn.onclick = async () => {
         const interval = getInputValueByKey('update_interval');
         try {
-          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['install', interval || '3600']);
+          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['install_autoupdater', interval || '3600']);
           notify('info', `Auto-Updater installed with interval ${interval || 3600} seconds`);
           setTimeout(() => location.reload(), 1000);
         } catch (e) {
@@ -224,11 +224,11 @@ function createAutoUpdaterSection(section) {
         }
       };
     } else {
-      const uninstallBtn = section.taboption('autoupdater', form.Button, 'uninstall_updater', 'Uninstall Auto-Updater');
+      const uninstallBtn = section.taboption('autoupdater', form.Button, 'uninstall_autoupdater', 'Uninstall Auto-Updater');
       uninstallBtn.inputstyle = 'remove';
       uninstallBtn.onclick = async () => {
         try {
-          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['uninstall']);
+          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['uninstall_autoupdater']);
           notify('info', 'Auto-Updater uninstalled');
           setTimeout(() => location.reload(), 1000);
         } catch (e) {
@@ -238,7 +238,7 @@ function createAutoUpdaterSection(section) {
     }
 
     // Status Display
-    const statusDisp = section.taboption('autoupdater', form.DummyValue, 'updater_status', 'Updater Status');
+    const statusDisp = section.taboption('autoupdater', form.DummyValue, 'status', 'Updater Status');
     statusDisp.rawhtml = true;
     statusDisp.cfgvalue = () => {
       const colors = { running: 'green', stopped: 'red' };

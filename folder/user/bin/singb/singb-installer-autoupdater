@@ -65,16 +65,16 @@ uninstall_autoupdater() {
 }
 
 case "$1" in
-    install)
+    install_autoupdater)
         install_autoupdater "$2"
         ;;
-    uninstall)
+    uninstall_autoupdater)
         uninstall_autoupdater
         ;;
     status)
         $AUTOSTART_PATH status
         ;;
     *)
-        echo "Usage: $0 {install [interval in seconds] | uninstall | status}"
+        echo "Usage: $0 {install_autoupdater [interval in seconds] | uninstall_autoupdater | status}"
         ;;
 esac
