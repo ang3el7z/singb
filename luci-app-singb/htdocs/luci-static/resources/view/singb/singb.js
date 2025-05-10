@@ -189,6 +189,66 @@ function createSubscribeEditor(section, tabName, config){
     urlInput.cfgvalue = () => loadFile(`/etc/sing-box/url_${config.name}`);
 }
 
+async function getAutoUpdaterStatus() {
+  try {
+    const result = await fs.exec('/usr/bin/singb-installer-autoupdater', ['status']);
+    return result.stdout.trim();
+  } catch {
+    return 'stopped';
+  }
+}
+
+function createAutoUpdaterSection(section) {
+  section.tab('autoupdater', 'Auto-Updater');
+
+  // Interval Input
+  const intervalInput = section.taboption('autoupdater', form.Value, 'update_interval', 'Update Interval (seconds)');
+  intervalInput.datatype = 'uinteger';
+  intervalInput.placeholder = '3600';
+
+  // Dynamic Buttons
+  getAutoUpdaterStatus().then((status) => {
+    const isRunning = status === 'running';
+
+    if (!isRunning) {
+      const installBtn = section.taboption('autoupdater', form.Button, 'install_updater', 'Install Auto-Updater');
+      installBtn.inputstyle = 'positive';
+      installBtn.onclick = async () => {
+        const interval = getInputValueByKey('update_interval');
+        try {
+          await fs.exec('/usr/bin/singb-installer-autoupdater', ['install', interval || '3600']);
+          notify('info', `Auto-Updater installed with interval ${interval || 3600} seconds`);
+          setTimeout(() => location.reload(), 1000);
+        } catch (e) {
+          notify('error', `Install failed: ${e.message}`);
+        }
+      };
+    } else {
+      const uninstallBtn = section.taboption('autoupdater', form.Button, 'uninstall_updater', 'Uninstall Auto-Updater');
+      uninstallBtn.inputstyle = 'remove';
+      uninstallBtn.onclick = async () => {
+        try {
+          await fs.exec('/usr/bin/singb-installer-autoupdater', ['uninstall']);
+          notify('info', 'Auto-Updater uninstalled');
+          setTimeout(() => location.reload(), 1000);
+        } catch (e) {
+          notify('error', `Uninstall failed: ${e.message}`);
+        }
+      };
+    }
+
+    // Status Display
+    const statusDisp = section.taboption('autoupdater', form.DummyValue, 'updater_status', 'Updater Status');
+    statusDisp.rawhtml = true;
+    statusDisp.cfgvalue = () => {
+      const colors = { running: 'green', stopped: 'red' };
+      const txt = isRunning ? 'Running' : 'Stopped';
+      const clr = colors[status] || 'orange';
+      return `<span style="color: ${clr}; font-weight: bold;">${txt}</span>`;
+    };
+  });
+}
+
 // Main view
 return view.extend({
   handleSave: null,
@@ -219,6 +279,8 @@ return view.extend({
 
     // Service action buttons
     ['start','stop','restart','reload'].forEach(a => createServiceButton(s, a, status));
+
+    createAutoUpdaterSection(s);
 
     // Config Tabs
     const configs = [
