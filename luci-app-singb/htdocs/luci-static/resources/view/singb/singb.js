@@ -191,7 +191,7 @@ function createSubscribeEditor(section, tabName, config){
 
 async function getAutoUpdaterStatus() {
   try {
-    const result = await fs.exec('/usr/bin/singb-installer-autoupdater', ['status']);
+    const result = await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['status']);
     return result.stdout.trim();
   } catch {
     return 'stopped';
@@ -216,7 +216,7 @@ function createAutoUpdaterSection(section) {
       installBtn.onclick = async () => {
         const interval = getInputValueByKey('update_interval');
         try {
-          await fs.exec('/usr/bin/singb-installer-autoupdater', ['install', interval || '3600']);
+          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['install', interval || '3600']);
           notify('info', `Auto-Updater installed with interval ${interval || 3600} seconds`);
           setTimeout(() => location.reload(), 1000);
         } catch (e) {
@@ -228,7 +228,7 @@ function createAutoUpdaterSection(section) {
       uninstallBtn.inputstyle = 'remove';
       uninstallBtn.onclick = async () => {
         try {
-          await fs.exec('/usr/bin/singb-installer-autoupdater', ['uninstall']);
+          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['uninstall']);
           notify('info', 'Auto-Updater uninstalled');
           setTimeout(() => location.reload(), 1000);
         } catch (e) {
