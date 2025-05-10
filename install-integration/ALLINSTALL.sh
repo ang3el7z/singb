@@ -228,8 +228,9 @@ touch /etc/sing-box/url_config2.json
 touch /etc/sing-box/url_config3.json
 show_success "Обновления созданы"
 
-show_progress "Создание singb-updater..."
-wget -O /usr/bin/singb/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb-updater
+show_progress "Создание singb-updater & autoupdater..."
+wget -O /usr/bin/singb/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb/singb-updater
+wget -O /usr/bin/singb/singb-installer-autoupdater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb/singb-installer-autoupdater
 show_success "Обновления созданы"
 
 show_progress "Настройка доступов..."
