@@ -8,6 +8,7 @@
                 "/usr/bin/singb/singb-updater*": ["exec"],
                 "/tmp/*": ["read"]
             },
+            
             "uci": ["singb"]
         },
         "write": {
