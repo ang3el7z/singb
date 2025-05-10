@@ -53,6 +53,9 @@ opkg update && opkg install openssh-sftp-server nano curl jq
 [ $? -eq 0 ] && show_success "Зависимости успешно установлены" || show_error "Ошибка установки зависимостей"
 separator
 
+sleep 1
+read -p "$(echo -e "  ${FG_ACCENT}▷ URL подписки на конфигурацию (Enter для ручного ввода): ${RESET}")" CONFIG_URL
+
 # Установка sing-box
 show_progress "Установка последней версии sing-box..."
 opkg install sing-box
@@ -135,14 +138,11 @@ configure_firewall
 # Автоматическая настройка конфигурации
 separator
 AUTO_CONFIG_SUCCESS=0
-sleep 1
 show_progress "Импорт конфигурации sing-box"
-sleep 2
-read -p "$(echo -e "  ${FG_ACCENT}▷ URL конфигурации (Enter для ручного ввода): ${RESET}")" CONFIG_URL
 
 # Проверяем, что URL не пустой
 if [ -n "$CONFIG_URL" ]; then
-    MAX_ATTEMPTS=2  # Максимальное количество попыток загрузки
+    MAX_ATTEMPTS=3  # Максимальное количество попыток загрузки
     ATTEMPT=1  # Счетчик попыток
     SUCCESS=0  # Флаг успешной загрузки
 
@@ -269,7 +269,9 @@ uci set 'dhcp.lan.dhcpv6=disabled'
 uci commit
 show_success "IPv6 отключен"
 
+show_progress "Перезапуск сервисов..."
 /etc/init.d/network restart && service sing-box restart
+show_success "Сервисы перезапущены"
 
 separator
 echo -e "${BG_ACCENT}${FG_MAIN} Установка завершена! Доступ к панели: http://192.168.1.1 ${RESET}"
