@@ -53,9 +53,6 @@ opkg update && opkg install openssh-sftp-server nano curl jq
 [ $? -eq 0 ] && show_success "Зависимости успешно установлены" || show_error "Ошибка установки зависимостей"
 separator
 
-sleep 1
-read -p "$(echo -e "  ${FG_ACCENT}▷ URL подписки на конфигурацию (Enter для ручного ввода): ${RESET}")" CONFIG_URL
-
 # Установка sing-box
 show_progress "Установка последней версии sing-box..."
 opkg install sing-box
@@ -139,6 +136,9 @@ configure_firewall
 separator
 AUTO_CONFIG_SUCCESS=0
 show_progress "Импорт конфигурации sing-box"
+
+sleep 5
+read -p "$(echo -e "  ${FG_ACCENT}▷ URL подписки на конфигурацию (Enter для ручного ввода): ${RESET}")" CONFIG_URL
 
 # Проверяем, что URL не пустой
 if [ -n "$CONFIG_URL" ]; then
