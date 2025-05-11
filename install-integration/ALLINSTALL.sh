@@ -178,12 +178,13 @@ wget -O /etc/init.d/singb-autoupdater https://raw.githubusercontent.com/Vancltki
 show_success "Обновления созданы"
 
 show_progress "Настройка доступов..."
-chmod 755 /usr/bin/singb/*
-chown root:root /usr/bin/singb/*
 chmod 644 /etc/sing-box/*
+chmod 755 /usr/bin/singb/*
 chmod 755 /etc/init.d/singb-autoupdater
+chown root:root /usr/bin/singb/*
 chown root:root /etc/init.d/singb-autoupdater
 chmod +x /etc/init.d/singb-autoupdater
+chmod +x /usr/bin/singb/singb-autoupdater-wrapper
 show_success "Доступы получены"
 
 # Установка веб-интерфейса
