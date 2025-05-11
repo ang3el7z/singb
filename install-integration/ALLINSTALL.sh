@@ -273,35 +273,42 @@ show_success "IPv6 отключен"
 show_progress "Перезапуск network..."
 /etc/init.d/network restart
 
+show_progress "Перезапуск network..."
+/etc/init.d/network restart
+
+network_check() {
 # Параметры проверки
-timeout=120       # Общее время ожидания (сек)
-interval=5       # Интервал между попытками (сек)
-target="8.8.8.8" # Цель для проверки (DNS Google или ваш шлюз)
+    timeout=60       # Общее время ожидания (сек)
+    interval=5       # Интервал между попытками (сек)
+    target="8.8.8.8" # Цель для проверки
 
-attempts=$((timeout / interval))
-success=0
+    success=0
+    attempts=$(($timeout / $interval))
 
-show_progress "Проверка доступности сети..."
-for ((i=1; i<=attempts; i++)); do
-    if ping -c 1 -W 2 "$target" &>/dev/null; then
-        success=1
-        break
+    show_progress "Проверка доступности сети..."
+    i=1
+    while [ $i -le $attempts ]; do
+        if ping -c 1 -W 2 "$target" >/dev/null 2>&1; then
+            success=1
+            break
+        fi
+        sleep $interval
+        i=$((i + 1))
+    done
+    
+    if [ $success -eq 1 ]; then
+        show_success "Сеть доступна (проверка заняла $((i * interval)) сек)"
+    else
+        show_error "Сеть не доступна после $timeout сек!" >&2
+        exit 1
     fi
-    sleep "$interval"
-done
-
-if [ $success -eq 1 ]; then
-    show_success "Сеть доступна (проверка заняла $((i * interval)) сек)"
-else
-    show_error "Сеть не доступна после $timeout сек!" >&2
-    exit 1
-fi
-
-show_success "Network перезапущен"
+    show_success "Сервисы перезапущены"
+}
+network_check
 
 show_progress "Включение sing-box"
-                service sing-box enable
-                service sing-box restart
+service sing-box enable
+service sing-box restart
 show_success "Сервис успешно запущен"
  
 separator
