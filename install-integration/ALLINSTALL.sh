@@ -90,7 +90,7 @@ read -p "$(echo -e "  ${FG_ACCENT}▷ URL подписки на конфигур
 
 # Проверяем, что URL не пустой
 if [ -n "$CONFIG_URL" ]; then
-    MAX_ATTEMPTS=5  # Максимальное количество попыток загрузки
+    MAX_ATTEMPTS=2  # Максимальное количество попыток загрузки
     ATTEMPT=1  # Счетчик попыток
     SUCCESS=0  # Флаг успешной загрузки
 
@@ -208,11 +208,6 @@ configure_proxy() {
     uci set network.proxy.peerdns="0"
     uci set network.proxy.auto="1"
     uci commit network
-    if service network restart; then
-        show_success "Сетевой интерфейс настроен"
-    else
-        show_error "Ошибка настройки сети"
-    fi
 }
 configure_proxy
 
@@ -241,10 +236,7 @@ configure_firewall() {
         uci set firewall.@forwarding[-1].src="lan"
         uci set firewall.@forwarding[-1].family="ipv4"
     fi
-
     uci commit firewall >/dev/null 2>&1
-    service firewall reload >/dev/null 2>&1
-    
     show_success "Правила фаервола применены"
 }
 configure_firewall
@@ -270,11 +262,11 @@ uci set 'dhcp.lan.dhcpv6=disabled'
 uci commit
 show_success "IPv6 отключен"
 
-show_progress "Перезапуск network..."
-/etc/init.d/network restart
+show_progress "Перезапуск firewall..."
+service firewall reload >/dev/null 2>&1
 
 show_progress "Перезапуск network..."
-/etc/init.d/network restart
+service network restart
 
 network_check() {
 # Параметры проверки
@@ -298,11 +290,12 @@ network_check() {
     
     if [ $success -eq 1 ]; then
         show_success "Сеть доступна (проверка заняла $((i * interval)) сек)"
+        show_success "network работает"
     else
         show_error "Сеть не доступна после $timeout сек!" >&2
         exit 1
     fi
-    show_success "Сервисы перезапущены"
+  
 }
 network_check
 
