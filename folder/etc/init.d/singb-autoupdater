@@ -1,8 +1,8 @@
 #!/bin/sh /etc/rc.common
 
 USE_PROCD=1
-START=50
-STOP=50
+START=99
+STOP=99
 INTERVAL=3600
 
 start_service() {
