@@ -175,9 +175,6 @@ function createConfigEditor(section, tabName, config) {
 }
 
 function subscribeURL(section, tabName, config){
-    if (config.name === 'config.json') {
-      createSwitchAutoUpdater(section, tabName);
-    }
     createSubscribeEditor(section, tabName, config);
     createSaveUrlButton(section, tabName, config);
     createUpdateConfigButton(section, tabName, config);
@@ -202,32 +199,28 @@ async function getAutoUpdaterStatus() {
 }
 
 function createSwitchAutoUpdater(section, tabName, autoStatus) {
-  const flag = section.taboption(tabName, form.Flag, 'auto_updater_switch', 'Auto-Updater');
-  flag.enabled = '1';
-  flag.disabled = '0';
-  flag.rmempty = false;
-
-  // Инициализация: получить текущий статус
-  flag.cfgvalue = () => autoStatus === 'running' ? '1' : '0';
-
-  // Обработчик изменения
-  flag.write = async (value) => {
-    flag.inputstyle = 'loading';
-    try {
-      if (value === '1') {
-        await fs.exec('/etc/init.d/singb-autoupdater', ['enable']);
-        notify('info', 'Auto-Updater enabled');
-      } else {
-        await fs.exec('/etc/init.d/singb-autoupdater', ['disable']);
-        notify('info', 'Auto-Updater disabled');
+    const flag = section.taboption(tabName, form.Flag, 'auto_updater_switch', 'Auto-Updater');
+    flag.enabled = '1';
+    flag.disabled = '0';
+    flag.rmempty = false;
+    flag.cfgvalue = () => autoStatus === 'running' ? '1' : '0';
+    flag.write = async (value) => {
+      flag.inputstyle = 'loading';
+      try {
+        if (value === '1') {
+          await fs.exec('/etc/init.d/singb-autoupdater', ['enable']);
+          notify('info', 'Auto-Updater enabled');
+        } else {
+          await fs.exec('/etc/init.d/singb-autoupdater', ['disable']);
+          notify('info', 'Auto-Updater disabled');
+        }
+      } catch (e) {
+        notify('error', 'Toggle failed: ' + e.message);
+      } finally {
+        setTimeout(() => location.reload(), 500);
       }
-    } catch (e) {
-      notify('error', 'Toggle failed: ' + e.message);
-    } finally {
-      setTimeout(() => location.reload(), 500);
-    }
-  };
-}
+    };
+  }
 
 // Main view
 return view.extend({
@@ -271,10 +264,10 @@ return view.extend({
       const tab = (config.name === 'config.json') ? 'main_config' : `config_${config.name}`;
       s.tab(tab, config.label);
 
+      subscribeURL(s, tab, config);
       if (config.name === 'config.json') {
         createSwitchAutoUpdater(s, tab, autoStatus);
       }
-      subscribeURL(s, tab, config);
       configContent(s, tab, config);
       createSetMainButton(s, tab, config);
     });
