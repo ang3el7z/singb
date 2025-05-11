@@ -214,7 +214,7 @@ function createSwitchAutoUpdater(section, tabName) {
   };
 
   // Обработчик изменения
-  flag.write = async (sectionId, value) => {
+  flag.write = async (value) => {
     try {
       if (value === '1') {
         // Включаем: enable
@@ -263,8 +263,6 @@ return view.extend({
 
     // Service action buttons
     ['start','stop','restart','reload'].forEach(a => createServiceButton(s, a, status));
-
-    createAutoUpdaterSection(s);
 
     // Config Tabs
     const configs = [
