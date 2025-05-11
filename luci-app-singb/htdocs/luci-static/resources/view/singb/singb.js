@@ -201,17 +201,14 @@ async function getAutoUpdaterStatus() {
   }
 }
 
-function createSwitchAutoUpdater(section, tabName) {
+function createSwitchAutoUpdater(section, tabName, autoStatus) {
   const flag = section.taboption(tabName, form.Flag, 'auto_updater_switch', 'Auto-Updater');
   flag.enabled = '1';
   flag.disabled = '0';
   flag.rmempty = false;
 
   // Инициализация: получить текущий статус
-  flag.cfgvalue = async () => {
-    const status = await getAutoUpdaterStatus();      // возвращает 'running' или 'stopped'
-    return (status === 'running') ? '1' : '0';
-  };
+  flag.cfgvalue = () => autoStatus === 'running' ? '1' : '0';
 
   // Обработчик изменения
   flag.write = async (value) => {
@@ -246,7 +243,6 @@ return view.extend({
     s.tab('config', 'Edit Config');
 
     const status = await getStatus();
-
     // Service status display
     const statusDisp = s.taboption('service', form.DummyValue, 'service_status', 'Service Status');
     statusDisp.rawhtml = true;
@@ -263,6 +259,7 @@ return view.extend({
     // Service action buttons
     ['start','stop','restart','reload'].forEach(a => createServiceButton(s, a, status));
 
+    const autoStatus = await getAutoUpdaterStatus();
     // Config Tabs
     const configs = [
       { name: 'config.json', label: 'Main Config' },
@@ -274,6 +271,9 @@ return view.extend({
       const tab = (config.name === 'config.json') ? 'main_config' : `config_${config.name}`;
       s.tab(tab, config.label);
 
+      if (config.name === 'config.json') {
+        createSwitchAutoUpdater(s, tab, autoStatus);
+      }
       subscribeURL(s, tab, config);
       configContent(s, tab, config);
       createSetMainButton(s, tab, config);
