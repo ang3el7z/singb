@@ -231,6 +231,7 @@ show_success "Обновления созданы"
 show_progress "Создание singb-updater & autoupdater..."
 mkdir -p /usr/bin/singb/
 wget -O /usr/bin/singb/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb/singb-updater
+wget -O /usr/bin/singb/singb-autoupdater-wrapper https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb/singb-autoupdater-wrapper
 wget -O /etc/init.d/singb-autoupdater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/etc/init.d/singb-autoupdater
 show_success "Обновления созданы"
 
