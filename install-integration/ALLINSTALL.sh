@@ -231,13 +231,15 @@ show_success "Обновления созданы"
 show_progress "Создание singb-updater & autoupdater..."
 mkdir -p /usr/bin/singb/
 wget -O /usr/bin/singb/singb-updater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb/singb-updater
-wget -O /usr/bin/singb/singb-installer-autoupdater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/user/bin/singb/singb-installer-autoupdater
+wget -O /etc/init.d/singb-autoupdater https://raw.githubusercontent.com/Vancltkin/singb/main/folder/etc/init.d/singb-autoupdater
 show_success "Обновления созданы"
 
 show_progress "Настройка доступов..."
 chmod 755 /usr/bin/singb/*
 chown root:root /usr/bin/singb/*
 chmod 644 /etc/sing-box/*
+chmod 755 /etc/init.d/singb-autoupdater
+chown root:root /etc/init.d/singb-autoupdater
 show_success "Доступы получены"
 
 # Установка веб-интерфейса

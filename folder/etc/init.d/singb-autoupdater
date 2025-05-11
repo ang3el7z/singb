@@ -1,0 +1,51 @@
+#!/bin/sh /etc/rc.common
+START=50
+STOP=50
+SERVICE_NAME="singb-autoupdater"
+PIDFILE="/var/run/${SERVICE_NAME}.pid"
+LOG_TAG="singb-autoupdater"
+INTERVAL=3600   # секунды между обновлениями
+
+start() {
+    logger -t $LOG_TAG "Starting auto-updater (interval=${INTERVAL}s)"
+    # Запускаем в фоне бесконечный цикл обновлений
+    start-stop-daemon -S -q -b -m -p "$PIDFILE" -- /bin/sh -c "\
+        while true; do \
+          logger -t $LOG_TAG 'Running updater'; \
+          if /usr/bin/singb/singb-updater /etc/sing-box/url_config.json /etc/sing-box/config.json; then \
+            logger -t $LOG_TAG 'Update successful, reloading sing-box'; \
+            /etc/init.d/sing-box reload; \
+          else \
+            logger -t $LOG_TAG 'Update failed'; \
+          fi; \
+          sleep $INTERVAL; \
+        done"
+}
+
+stop() {
+    logger -t $LOG_TAG "Stopping auto-updater"
+    start-stop-daemon -K -q -p "$PIDFILE"
+    rm -f "$PIDFILE"
+}
+
+status() {
+    if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+        echo "running"
+        return 0
+    else
+        echo "stopped"
+        return 1
+    fi
+}
+
+enable() {
+    echo "Enabling auto-updater and starting now"
+    ln -sf /etc/init.d/$SERVICE_NAME /etc/rc.d/S99$SERVICE_NAME
+    start
+}
+
+disable() {
+    echo "Disabling auto-updater and stopping now"
+    rm -f /etc/rc.d/S99$SERVICE_NAME
+    stop
+}

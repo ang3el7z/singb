@@ -174,7 +174,10 @@ function createConfigEditor(section, tabName, config) {
     txt.cfgvalue = () => loadFile(`/etc/sing-box/${config.name}`);
 }
 
-function SubscribeURL(section, tabName, config){
+function subscribeURL(section, tabName, config){
+    if (config.name === 'config.json') {
+      createSwitchAutoUpdater(section, tabName);
+    }
     createSubscribeEditor(section, tabName, config);
     createSaveUrlButton(section, tabName, config);
     createUpdateConfigButton(section, tabName, config);
@@ -191,62 +194,43 @@ function createSubscribeEditor(section, tabName, config){
 
 async function getAutoUpdaterStatus() {
   try {
-    const result = await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['status']);
-    return result.stdout.trim();
+    const res = await fs.exec('/etc/init.d/singb-autoupdater', ['status']);
+    return res.stdout.trim().toLowerCase();   // "running" или "stopped"
   } catch {
     return 'stopped';
   }
 }
 
-function createAutoUpdaterSection(section) {
-  section.tab('autoupdater', 'Auto-Updater');
+function createSwitchAutoUpdater(section, tabName) {
+  const flag = section.taboption(tabName, form.Flag, 'auto_updater_switch', 'Auto-Updater');
+  flag.enabled = '1';
+  flag.disabled = '0';
+  flag.rmempty = false;
 
-  // Interval Input
-  const intervalInput = section.taboption('autoupdater', form.Value, 'update_interval', 'Update Interval (seconds)');
-  intervalInput.datatype = 'uinteger';
-  intervalInput.placeholder = '3600';
+  // Инициализация: получить текущий статус
+  flag.cfgvalue = async () => {
+    const status = await getAutoUpdaterStatus();      // возвращает 'running' или 'stopped'
+    return (status === 'running') ? '1' : '0';
+  };
 
-  // Dynamic Buttons
-  getAutoUpdaterStatus().then((status) => {
-    const isRunning = status === 'running';
-
-    if (!isRunning) {
-      const installBtn = section.taboption('autoupdater', form.Button, 'install_autoupdater', 'Install Auto-Updater');
-      installBtn.inputstyle = 'positive';
-      installBtn.onclick = async () => {
-        const interval = getInputValueByKey('update_interval');
-        try {
-          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['install_autoupdater', interval || '3600']);
-          notify('info', `Auto-Updater installed with interval ${interval || 3600} seconds`);
-          setTimeout(() => location.reload(), 1000);
-        } catch (e) {
-          notify('error', `Install failed: ${e.message}`);
-        }
-      };
-    } else {
-      const uninstallBtn = section.taboption('autoupdater', form.Button, 'uninstall_autoupdater', 'Uninstall Auto-Updater');
-      uninstallBtn.inputstyle = 'remove';
-      uninstallBtn.onclick = async () => {
-        try {
-          await fs.exec('/usr/bin/singb/singb-installer-autoupdater', ['uninstall_autoupdater']);
-          notify('info', 'Auto-Updater uninstalled');
-          setTimeout(() => location.reload(), 1000);
-        } catch (e) {
-          notify('error', `Uninstall failed: ${e.message}`);
-        }
-      };
+  // Обработчик изменения
+  flag.write = async (sectionId, value) => {
+    try {
+      if (value === '1') {
+        // Включаем: enable
+        await fs.exec('/etc/init.d/singb-autoupdater', ['enable']);
+        notify('info', 'Auto-Updater enabled');
+      } else {
+        // Отключаем: disable
+        await fs.exec('/etc/init.d/singb-autoupdater', ['disable']);
+        notify('info', 'Auto-Updater disabled');
+      }
+    } catch (e) {
+      notify('error', 'Failed to toggle Auto-Updater: ' + e.message);
     }
-
-    // Status Display
-    const statusDisp = section.taboption('autoupdater', form.DummyValue, 'status', 'Updater Status');
-    statusDisp.rawhtml = true;
-    statusDisp.cfgvalue = () => {
-      const colors = { running: 'green', stopped: 'red' };
-      const txt = isRunning ? 'Running' : 'Stopped';
-      const clr = colors[status] || 'orange';
-      return `<span style="color: ${clr}; font-weight: bold;">${txt}</span>`;
-    };
-  });
+    // Перезагрузить страницу, чтобы обновить кнопки statуса
+    setTimeout(() => location.reload(), 500);
+  };
 }
 
 // Main view
@@ -293,7 +277,7 @@ return view.extend({
       const tab = (config.name === 'config.json') ? 'main_config' : `config_${config.name}`;
       s.tab(tab, config.label);
 
-      SubscribeURL(s, tab, config);
+      subscribeURL(s, tab, config);
       configContent(s, tab, config);
       createSetMainButton(s, tab, config);
     });
