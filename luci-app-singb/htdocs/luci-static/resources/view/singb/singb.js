@@ -200,7 +200,7 @@ async function getAutoUpdaterStatus() {
 
 function createSwitchAutoUpdaterButton(section, tabName, autoStatus) {
     const btn = section.taboption(tabName, form.Button, 'auto_updater_config', 'Auto-Updater');
-    btn.title = (autoStatus === 'running') ? 'Auto-Updater Stopped' : 'Auto-Updater Started';
+    btn.title = (autoStatus === 'running') ? 'Auto-Updater Stopp' : 'Auto-Updater Start';
     btn.inputstyle = (autoStatus === 'running') ? 'negative' : 'positive';
     btn.onclick = async () => {
         btn.inputstyle = 'loading';
