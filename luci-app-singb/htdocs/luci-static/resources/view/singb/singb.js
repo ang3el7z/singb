@@ -198,29 +198,27 @@ async function getAutoUpdaterStatus() {
   }
 }
 
-function createSwitchAutoUpdater(section, tabName, autoStatus) {
-    const flag = section.taboption(tabName, form.Flag, 'auto_updater_switch', 'Auto-Updater');
-    flag.enabled = '1';
-    flag.disabled = '0';
-    flag.rmempty = false;
-    flag.cfgvalue = () => autoStatus === 'running' ? '1' : '0';
-    flag.write = async (value) => {
-      flag.inputstyle = 'loading';
-      try {
-        if (value === '1') {
-          await fs.exec('/etc/init.d/singb-autoupdater', ['enable']);
-          notify('info', 'Auto-Updater enabled');
-        } else {
-          await fs.exec('/etc/init.d/singb-autoupdater', ['disable']);
-          notify('info', 'Auto-Updater disabled');
-        }
-      } catch (e) {
-        notify('error', 'Toggle failed: ' + e.message);
-      } finally {
-        setTimeout(() => location.reload(), 500);
+function createSwitchAutoUpdaterButton(section, tabName, autoStatus) {
+    const btn = section.taboption(tabName, form.Button, 'auto_updater_config', 'Auto-Updater');
+    btn.title = (autoStatus === 'running') ? 'Auto-Updater Stopped' : 'Auto-Updater Started';
+    btn.inputstyle = (autoStatus === 'running') ? 'negative' : 'positive';
+    btn.onclick = async () => {
+        btn.inputstyle = 'loading';
+    try {
+      if (autoStatus === 'running') {
+        await fs.exec('/etc/init.d/singb-autoupdater', ['stop']);
+        notify('info', 'Auto-Updater Stopped');
+      } else {
+        await fs.exec('/etc/init.d/singb-autoupdater', ['start']);
+        notify('info', 'Auto-Updater Started');
       }
-    };
-  }
+    } catch (e) {
+      notify('error', `Failed to toggle Auto-Updater: ${e.message}`);
+    } finally {
+      setTimeout(() => location.reload(), 500);
+    }
+  };
+}
 
 // Main view
 return view.extend({
@@ -266,7 +264,7 @@ return view.extend({
 
       subscribeURL(s, tab, config);
       if (config.name === 'config.json') {
-        createSwitchAutoUpdater(s, tab, autoStatus);
+        createSwitchAutoUpdaterButton(s, tab, autoStatus);
       }
       configContent(s, tab, config);
       createSetMainButton(s, tab, config);
