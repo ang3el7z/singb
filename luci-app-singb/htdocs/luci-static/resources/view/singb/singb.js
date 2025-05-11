@@ -206,9 +206,11 @@ function createSwitchAutoUpdaterButton(section, tabName, autoStatus) {
         btn.inputstyle = 'loading';
     try {
       if (autoStatus === 'running') {
+        await fs.exec('/etc/init.d/singb-autoupdater', ['disable']);
         await fs.exec('/etc/init.d/singb-autoupdater', ['stop']);
         notify('info', 'Auto-Updater Stopped');
       } else {
+        await fs.exec('/etc/init.d/singb-autoupdater', ['enable']);
         await fs.exec('/etc/init.d/singb-autoupdater', ['start']);
         notify('info', 'Auto-Updater Started');
       }
