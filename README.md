@@ -5,8 +5,9 @@ wget -O /root/ALLINSTALL.sh https://raw.githubusercontent.com/Vancltkin/singb/ma
 https://raw.githubusercontent.com/Vancltkin/singb/main/install-integration/openwrt_2.11.json
 
 # Screenshot
-![image](https://github.com/user-attachments/assets/01cbdc62-1652-4cbd-85d8-38fbaaf36e4b){width=300}
-![image](https://github.com/user-attachments/assets/f70907ed-19cc-4ea4-b978-76468de75954){width=300}
+![image](https://github.com/user-attachments/assets/01cbdc62-1652-4cbd-85d8-38fbaaf36e4b)
+
+![image](https://github.com/user-attachments/assets/f70907ed-19cc-4ea4-b978-76468de75954)
 
 # Fix visibility table ui
 cntrl +shift + I
