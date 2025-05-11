@@ -183,6 +183,7 @@ chown root:root /usr/bin/singb/*
 chmod 644 /etc/sing-box/*
 chmod 755 /etc/init.d/singb-autoupdater
 chown root:root /etc/init.d/singb-autoupdater
+chmod +x /etc/init.d/singb-autoupdater
 show_success "Доступы получены"
 
 # Установка веб-интерфейса
