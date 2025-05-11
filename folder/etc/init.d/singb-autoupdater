@@ -40,12 +40,12 @@ status() {
 
 enable() {
     echo "Enabling auto-updater and starting now"
-    ln -sf /etc/init.d/$SERVICE_NAME /etc/rc.d/S99$SERVICE_NAME
+    ln -sf /etc/init.d/$SERVICE_NAME /etc/rc.d/S50$SERVICE_NAME
     start
 }
 
 disable() {
     echo "Disabling auto-updater and stopping now"
-    rm -f /etc/rc.d/S99$SERVICE_NAME
+    rm -f /etc/rc.d/S50$SERVICE_NAME
     stop
 }
