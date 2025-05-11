@@ -80,64 +80,12 @@ show_warning "Конфигурационный файл сброшен"
 
 separator
 
-# Создание сетевого интерфейса
-configure_proxy() {
-    show_progress "Создание сетевого интерфейса proxy..."
-    uci set network.proxy=interface
-    uci set network.proxy.proto="none"
-    uci set network.proxy.device="singtun0"
-    uci set network.proxy.defaultroute="0"
-    uci set network.proxy.delegate="0"
-    uci set network.proxy.peerdns="0"
-    uci set network.proxy.auto="1"
-    uci commit network
-    if service network restart; then
-        show_success "Сетевой интерфейс настроен"
-    else
-        show_error "Ошибка настройки сети"
-    fi
-}
-configure_proxy
-
-# Настройка фаервола
-configure_firewall() {
-    show_progress "Конфигурация правил фаервола..."
-    
-    # Добавляем зону только если её не существует
-    if ! uci -q get firewall.proxy >/dev/null; then
-        uci add firewall zone >/dev/null
-        uci set firewall.@zone[-1].name="proxy"
-        uci set firewall.@zone[-1].forward="REJECT"
-        uci set firewall.@zone[-1].output="ACCEPT"
-        uci set firewall.@zone[-1].input="ACCEPT"
-        uci set firewall.@zone[-1].masq="1"
-        uci set firewall.@zone[-1].mtu_fix="1"
-        uci set firewall.@zone[-1].device="singtun0"
-        uci set firewall.@zone[-1].family="ipv4"
-        uci add_list firewall.@zone[-1].network="singtun0"
-    fi
-
-    # Добавляем forwarding только если не существует
-    if ! uci -q get firewall.@forwarding[-1].dest="proxy" >/dev/null; then
-        uci add firewall forwarding >/dev/null
-        uci set firewall.@forwarding[-1].dest="proxy"
-        uci set firewall.@forwarding[-1].src="lan"
-        uci set firewall.@forwarding[-1].family="ipv4"
-    fi
-
-    uci commit firewall >/dev/null 2>&1
-    service firewall reload >/dev/null 2>&1
-    
-    show_success "Правила фаервола применены"
-}
-configure_firewall
-
 # Автоматическая настройка конфигурации
 separator
 AUTO_CONFIG_SUCCESS=0
 show_progress "Импорт конфигурации sing-box"
 
-sleep 60
+sleep 1
 read -p "$(echo -e "  ${FG_ACCENT}▷ URL подписки на конфигурацию (Enter для ручного ввода): ${RESET}")" CONFIG_URL
 
 # Проверяем, что URL не пустой
@@ -159,10 +107,7 @@ if [ -n "$CONFIG_URL" ]; then
                 show_success "Конфигурация успешно загружена"
                 echo "$CONFIG_URL" > "/etc/sing-box/url_config.json"
                 
-                show_progress "Активация сервиса"
-                service sing-box enable
-                service sing-box restart
-                show_success "Сервис успешно запущен"
+                
                 AUTO_CONFIG_SUCCESS=1
                 SUCCESS=1
                 break  # Выход из цикла, если загрузка успешна
@@ -198,9 +143,8 @@ if [ "$AUTO_CONFIG_SUCCESS" -eq 0 ]; then
         read -p "$(echo -e "  ${FG_ACCENT}▷ Завершили редактирование config.json? [y/N]: ${RESET}")" yn
         case ${yn:-n} in
             [Yy]* )
-                service sing-box enable
-                service sing-box restart
-                show_success "Сервис активирован"
+                
+                show_success "Успешно"
                 break
                 ;;
             [Nn]* )
@@ -253,6 +197,58 @@ opkg install /root/luci-app-singb.ipk
 /etc/init.d/uhttpd restart
 show_success "Веб-интерфейс установлен"
 
+# Создание сетевого интерфейса
+configure_proxy() {
+    show_progress "Создание сетевого интерфейса proxy..."
+    uci set network.proxy=interface
+    uci set network.proxy.proto="none"
+    uci set network.proxy.device="singtun0"
+    uci set network.proxy.defaultroute="0"
+    uci set network.proxy.delegate="0"
+    uci set network.proxy.peerdns="0"
+    uci set network.proxy.auto="1"
+    uci commit network
+    if service network restart; then
+        show_success "Сетевой интерфейс настроен"
+    else
+        show_error "Ошибка настройки сети"
+    fi
+}
+configure_proxy
+
+# Настройка фаервола
+configure_firewall() {
+    show_progress "Конфигурация правил фаервола..."
+    
+    # Добавляем зону только если её не существует
+    if ! uci -q get firewall.proxy >/dev/null; then
+        uci add firewall zone >/dev/null
+        uci set firewall.@zone[-1].name="proxy"
+        uci set firewall.@zone[-1].forward="REJECT"
+        uci set firewall.@zone[-1].output="ACCEPT"
+        uci set firewall.@zone[-1].input="ACCEPT"
+        uci set firewall.@zone[-1].masq="1"
+        uci set firewall.@zone[-1].mtu_fix="1"
+        uci set firewall.@zone[-1].device="singtun0"
+        uci set firewall.@zone[-1].family="ipv4"
+        uci add_list firewall.@zone[-1].network="singtun0"
+    fi
+
+    # Добавляем forwarding только если не существует
+    if ! uci -q get firewall.@forwarding[-1].dest="proxy" >/dev/null; then
+        uci add firewall forwarding >/dev/null
+        uci set firewall.@forwarding[-1].dest="proxy"
+        uci set firewall.@forwarding[-1].src="lan"
+        uci set firewall.@forwarding[-1].family="ipv4"
+    fi
+
+    uci commit firewall >/dev/null 2>&1
+    service firewall reload >/dev/null 2>&1
+    
+    show_success "Правила фаервола применены"
+}
+configure_firewall
+
 # Очистка системы
 separator
 show_progress "Оптимизация системы..."
@@ -274,10 +270,40 @@ uci set 'dhcp.lan.dhcpv6=disabled'
 uci commit
 show_success "IPv6 отключен"
 
-show_progress "Перезапуск сервисов..."
-/etc/init.d/network restart && service sing-box restart
-show_success "Сервисы перезапущены"
+show_progress "Перезапуск network..."
+/etc/init.d/network restart
 
+# Параметры проверки
+timeout=120       # Общее время ожидания (сек)
+interval=5       # Интервал между попытками (сек)
+target="8.8.8.8" # Цель для проверки (DNS Google или ваш шлюз)
+
+attempts=$((timeout / interval))
+success=0
+
+show_progress "Проверка доступности сети..."
+for ((i=1; i<=attempts; i++)); do
+    if ping -c 1 -W 2 "$target" &>/dev/null; then
+        success=1
+        break
+    fi
+    sleep "$interval"
+done
+
+if [ $success -eq 1 ]; then
+    show_success "Сеть доступна (проверка заняла $((i * interval)) сек)"
+else
+    show_error "Сеть не доступна после $timeout сек!" >&2
+    exit 1
+fi
+
+show_success "Network перезапущен"
+
+show_progress "Включение sing-box"
+                service sing-box enable
+                service sing-box restart
+show_success "Сервис успешно запущен"
+ 
 separator
 echo -e "${BG_ACCENT}${FG_MAIN} Установка завершена! Доступ к панели: http://192.168.1.1 ${RESET}"
 separator
