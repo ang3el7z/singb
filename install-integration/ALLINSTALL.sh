@@ -78,8 +78,6 @@ show_warning "Сервис временно отключен"
 echo '{}' > /etc/sing-box/config.json
 show_warning "Конфигурационный файл сброшен"
 
-separator
-
 # Автоматическая настройка конфигурации
 separator
 AUTO_CONFIG_SUCCESS=0
