@@ -6,7 +6,7 @@ https://raw.githubusercontent.com/Vancltkin/singb/main/install-integration/openw
 
 # Screenshot
 ![image](https://github.com/user-attachments/assets/01cbdc62-1652-4cbd-85d8-38fbaaf36e4b)
-
+![image](https://github.com/user-attachments/assets/7a7984fb-226d-4846-935c-727caad06112)
 ![image](https://github.com/user-attachments/assets/f70907ed-19cc-4ea4-b978-76468de75954)
 
 # Fix visibility table ui
