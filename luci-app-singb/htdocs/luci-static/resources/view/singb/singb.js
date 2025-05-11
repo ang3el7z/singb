@@ -215,21 +215,20 @@ function createSwitchAutoUpdater(section, tabName) {
 
   // Обработчик изменения
   flag.write = async (value) => {
+    flag.inputstyle = 'loading';
     try {
       if (value === '1') {
-        // Включаем: enable
         await fs.exec('/etc/init.d/singb-autoupdater', ['enable']);
         notify('info', 'Auto-Updater enabled');
       } else {
-        // Отключаем: disable
         await fs.exec('/etc/init.d/singb-autoupdater', ['disable']);
         notify('info', 'Auto-Updater disabled');
       }
     } catch (e) {
-      notify('error', 'Failed to toggle Auto-Updater: ' + e.message);
+      notify('error', 'Toggle failed: ' + e.message);
+    } finally {
+      setTimeout(() => location.reload(), 500);
     }
-    // Перезагрузить страницу, чтобы обновить кнопки statуса
-    setTimeout(() => location.reload(), 500);
   };
 }
 
