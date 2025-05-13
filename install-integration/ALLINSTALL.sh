@@ -46,11 +46,11 @@ show_warning() {
 }
 
 deprecated_warning() {
-    clear                                       # Очищаем экран
-    separator                                   # Выводим разделитель (в вашей среде)
-    printf "%s\n" "${BG_ACCENT}${FG_MAIN}  ВНИМАНИЕ! Данный конфиг устарел.  ${RESET}"
-    printf "%s\n" "${BG_ACCENT}${FG_MAIN}  Используйте новый конфиг здесь: ${RESET}"
-    printf "%s\n" "  https://github.com/Vancltkin/luci-app-singbox-ui"
+    clear                                
+    separator
+    echo -e "${BG_ACCENT}${FG_MAIN}  ВНИМАНИЕ! Данный конфиг устарел.  ${RESET}"
+    echo -e "${BG_ACCENT}${FG_MAIN}  Используйте новый конфиг здесь: ${RESET}"
+    echo -e "${BG_ACCENT}${FG_MAIN} https://github.com/Vancltkin/luci-app-singbox-ui ${RESET}"
     separator
 }
 
@@ -60,7 +60,7 @@ ask_confirmation() {
     default="N"
     # Выводим prompt без перевода строки, читаем ответ
     while true; do
-        read -r -p "$prompt" reply
+        read -r -p "$(echo -e "  ${FG_ACCENT}▷ $prompt ${RESET}")" reply
         reply=${reply:-$default}               # По умолчанию N
         case "$reply" in
             [Yy]|[Yy][Ee][Ss]) return 0 ;;      # Да
