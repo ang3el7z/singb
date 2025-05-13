@@ -45,6 +45,37 @@ show_warning() {
     echo -e "${INDENT}! ${FG_WARNING}$1${RESET}\n"
 }
 
+deprecated_warning() {
+    clear                                       # Очищаем экран
+    separator                                   # Выводим разделитель (в вашей среде)
+    printf "%s\n" "${BG_ACCENT}${FG_MAIN}  ВНИМАНИЕ! Данный конфиг устарел.  ${RESET}"
+    printf "%s\n" "${BG_ACCENT}${FG_MAIN}  Используйте новый конфиг здесь: ${RESET}"
+    printf "%s\n" "  https://github.com/Vancltkin/luci-app-singbox-ui"
+    separator
+}
+
+ask_confirmation() {
+    local prompt default reply
+    prompt="Данный конфиг устарел. Хотите продолжить? [y/N]: "
+    default="N"
+    # Выводим prompt без перевода строки, читаем ответ
+    while true; do
+        read -r -p "$prompt" reply
+        reply=${reply:-$default}               # По умолчанию N
+        case "$reply" in
+            [Yy]|[Yy][Ee][Ss]) return 0 ;;      # Да
+            [Nn]|[Nn][Oo]) return 1 ;;         # Нет
+            *) echo "Пожалуйста, введите y (да) или n (нет)." ;;
+        esac
+    done
+}
+
+deprecated_warning
+if ! ask_confirmation; then
+    echo "Отмена. Выход."
+    exit 1
+fi
+
 header
 
 # Обновление репозиториев и установка зависимостей
